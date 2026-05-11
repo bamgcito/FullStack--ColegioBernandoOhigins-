@@ -1,0 +1,48 @@
+:root {
+  --ion-color-primary:           #1E3A5F;
+  --ion-color-primary-rgb:       30,58,95;
+  --ion-color-primary-contrast:  #ffffff;
+  --ion-color-primary-shade:     #162d4a;
+  --ion-color-primary-tint:      #2b5080;
+
+  --ion-color-secondary:         #2B6CB0;
+  --ion-color-secondary-rgb:     43,108,176;
+  --ion-color-secondary-contrast:#ffffff;
+  --ion-color-secondary-shade:   #245a96;
+  --ion-color-secondary-tint:    #3d7bbf;
+
+  --ion-color-success:           #2F855A;
+  --ion-color-success-rgb:       47,133,90;
+  --ion-color-success-contrast:  #ffffff;
+  --ion-color-success-shade:     #29754f;
+  --ion-color-success-tint:      #44916b;
+
+  --ion-color-warning:           #B7791F;
+  --ion-color-warning-rgb:       183,121,31;
+  --ion-color-warning-contrast:  #ffffff;
+  --ion-color-warning-shade:     #a16a1b;
+  --ion-color-warning-tint:      #be8635;
+
+  --ion-color-danger:            #C53030;
+  --ion-color-danger-rgb:        197,48,48;
+  --ion-color-danger-contrast:   #ffffff;
+  --ion-color-danger-shade:      #ad2a2a;
+  --ion-color-danger-tint:       #cb4545;
+
+  --ion-color-dark:              #1A202C;
+  --ion-color-medium:            #718096;
+  --ion-color-light:             #F7F9FC;
+
+  --ion-background-color:        #F7F9FC;
+  --ion-text-color:              #1A202C;
+  --ion-font-family:             'Nunito', 'Segoe UI', sans-serif;
+
+  --sidebar-bg:                  #1E3A5F;
+  --sidebar-width:               260px;
+  --sidebar-text:                rgba(255,255,255,0.85);
+  --sidebar-active-bg:           rgba(255,255,255,0.12);
+  --sidebar-active-text:         #ffffff;
+  --card-radius:                 12px;
+  --card-shadow:                 0 2px 12px rgba(255, 255, 255, 0.08);
+  --topbar-height:               60px;
+}

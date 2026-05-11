@@ -1,0 +1,7 @@
+{
+  "name": "proyecto-colegio",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}

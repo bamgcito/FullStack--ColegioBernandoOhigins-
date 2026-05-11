@@ -1,0 +1,140 @@
+<app-layout pageTitle="Dashboard — Administrador">
+  <div class="animate-in">
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon blue"><ion-icon name="people-outline"></ion-icon></div>
+        <div>
+          <div class="kpi-value">{{ stats.totalAlumnos }}</div>
+          <div class="kpi-label">Alumnos</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon teal"><ion-icon name="school-outline"></ion-icon></div>
+        <div>
+          <div class="kpi-value">{{ stats.totalCursos }}</div>
+          <div class="kpi-label">Cursos</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon green"><ion-icon name="person-outline"></ion-icon></div>
+        <div>
+          <div class="kpi-value">{{ stats.totalProfesores }}</div>
+          <div class="kpi-label">Profesores</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon orange"><ion-icon name="document-text-outline"></ion-icon></div>
+        <div>
+          <div class="kpi-value">{{ stats.totalEvaluaciones }}</div>
+          <div class="kpi-label">Evaluaciones</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon red"><ion-icon name="book-outline"></ion-icon></div>
+        <div>
+          <div class="kpi-value">{{ stats.totalAsignaturas }}</div>
+          <div class="kpi-label">Asignaturas</div>
+        </div>
+      </div>
+    </div>
+    <div class="dash-grid">
+      <div class="content-card">
+        <div class="content-card-header"><span class="content-card-title">Cursos Activos</span><a
+            routerLink="/admin/cursos" class="btn-primary" style="font-size:12px;padding:6px 14px">Ver todos</a></div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Curso</th>
+              <th>Año</th>
+              <th>Prof. Jefe</th>
+              <th>Alumnos</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let c of cursos">
+              <td><strong>{{ c.nivel }}{{ c.letra }}</strong></td>
+              <td>{{ c.anio }}</td>
+              <td>{{ getProfesor(c.profesorJefeId) }}</td>
+              <td><span class="badge badge-info">{{ c.alumnosIds?.length || 0 }}</span></td>
+            </tr>
+            <tr *ngIf="cursos.length === 0">
+              <td colspan="4" style="text-align:center;padding:20px;color:#718096">{{ loading ? 'Cargando...' : 'Sin
+                cursos' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="content-card">
+        <div class="content-card-header"><span class="content-card-title">Equipo Docente</span></div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Especialidad</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of profesores">
+              <td><strong>{{ p.nombre }} {{ p.apellido }}</strong></td>
+              <td>{{ p.especialidad || '—' }}</td>
+            </tr>
+            <tr *ngIf="profesores.length === 0">
+              <td colspan="2" style="text-align:center;padding:20px;color:#718096">{{ loading ? 'Cargando...' : 'Sin
+                profesores' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="content-card">
+        <div class="content-card-header"><span class="content-card-title">Últimas Anotaciones</span><a
+            routerLink="/admin/anotaciones" class="btn-primary" style="font-size:12px;padding:6px 14px">Ver todas</a>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Alumno</th>
+              <th>Tipo</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let a of anotaciones">
+              <td>{{ getAlumno(a.alumnoId) }}</td>
+              <td><span class="badge" [ngClass]="badgeAnotacion(a.tipo)">{{ a.tipo }}</span></td>
+              <td style="font-size:12px;color:#718096">{{ a.fecha }}</td>
+            </tr>
+            <tr *ngIf="anotaciones.length === 0">
+              <td colspan="3" style="text-align:center;padding:20px;color:#718096">Sin anotaciones</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="content-card">
+        <div class="content-card-header"><span class="content-card-title">Rendimiento por Alumno</span></div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Alumno</th>
+              <th>Promedio</th>
+              <th>Asistencia</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let a of alumnos">
+              <td>{{ a.nombre }} {{ a.apellido }}</td>
+              <td><span class="nota-chip" [ngClass]="notaClass(promedio(a.id))">{{ promedio(a.id) }}</span></td>
+              <td>{{ asistencia(a.id) }}%</td>
+              <td><span class="badge" [ngClass]="promedio(a.id)>=4?'badge-success':'badge-danger'">{{
+                  promedio(a.id)>=4?'Aprobado':'En riesgo' }}</span></td>
+            </tr>
+            <tr *ngIf="alumnos.length === 0">
+              <td colspan="4" style="text-align:center;padding:20px;color:#718096">{{ loading ? 'Cargando...' : 'Sin
+                alumnos' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</app-layout>

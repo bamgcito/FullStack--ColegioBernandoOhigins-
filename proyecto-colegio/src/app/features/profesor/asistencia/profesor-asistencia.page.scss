@@ -1,0 +1,5 @@
+.estado-btns{display:flex;gap:6px;flex-wrap:wrap;}
+.estado-btn{padding:5px 10px;border-radius:6px;border:1.5px solid #E2E8F0;font-size:12px;font-weight:700;cursor:pointer;background:white;font-family:"Nunito",sans-serif;display:inline-flex;align-items:center;gap:4px;transition:all 0.15s;}
+.active-p{background:rgba(47,133,90,0.1);border-color:#2F855A;color:#2F855A;}
+.active-a{background:rgba(197,48,48,0.1);border-color:#C53030;color:#C53030;}
+.active-t{background:rgba(183,121,31,0.1);border-color:#B7791F;color:#B7791F;}

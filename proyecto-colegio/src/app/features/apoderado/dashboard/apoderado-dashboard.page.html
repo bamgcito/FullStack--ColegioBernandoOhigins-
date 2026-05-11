@@ -1,0 +1,59 @@
+<app-layout [pageTitle]="'Panel — ' + (pupilo?.nombre || 'Apoderado')">
+  <div class="animate-in">
+    <div class="welcome-banner" *ngIf="pupilo">
+      <div class="welcome-avatar">{{ pupilo.nombre?.[0] }}</div>
+      <div>
+        <div class="welcome-title">{{ pupilo.nombre }} {{ pupilo.apellido }}</div>
+        <div class="welcome-sub">Curso {{ cursoLabel }} &nbsp;·&nbsp; Profesor Jefe: {{ profeJefeNombre }}</div>
+      </div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon blue"><ion-icon name="stats-chart-outline"></ion-icon></div>
+        <div><div class="kpi-value">{{ promedio }}</div><div class="kpi-label">Promedio General</div></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon green"><ion-icon name="checkmark-circle-outline"></ion-icon></div>
+        <div><div class="kpi-value">{{ asistencia }}%</div><div class="kpi-label">Asistencia</div></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon orange"><ion-icon name="pencil-outline"></ion-icon></div>
+        <div><div class="kpi-value">{{ anotaciones.length }}</div><div class="kpi-label">Anotaciones</div></div>
+      </div>
+    </div>
+    <div class="dash-grid">
+      <div class="content-card">
+        <div class="content-card-header">
+          <span class="content-card-title">Últimas Notas</span>
+          <a routerLink="/apoderado/notas" class="btn-primary" style="font-size:12px;padding:6px 14px">Ver todas</a>
+        </div>
+        <table class="data-table">
+          <thead><tr><th>Asignatura</th><th>Evaluación</th><th>Nota</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let n of notas">
+              <td>{{ n.asignatura }}</td>
+              <td>{{ n.evalNombre }}</td>
+              <td><span class="nota-chip" [ngClass]="notaClass(n.nota)">{{ n.nota }}</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="content-card">
+        <div class="content-card-header">
+          <span class="content-card-title">Anotaciones Recientes</span>
+          <a routerLink="/apoderado/anotaciones" class="btn-primary" style="font-size:12px;padding:6px 14px">Ver todas</a>
+        </div>
+        <table class="data-table">
+          <thead><tr><th>Tipo</th><th>Descripción</th><th>Fecha</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let a of anotaciones">
+              <td><span class="badge" [ngClass]="badge(a.tipo)">{{ a.tipo }}</span></td>
+              <td style="font-size:12px">{{ a.descripcion }}</td>
+              <td style="font-size:12px;color:#718096">{{ a.fecha }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</app-layout>

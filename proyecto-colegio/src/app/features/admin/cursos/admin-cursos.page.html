@@ -1,0 +1,58 @@
+<app-layout pageTitle="Gestión de Cursos">
+  <div class="animate-in">
+    <div class="page-actions">
+      <div></div>
+      <button class="btn-primary" (click)="showModal=true">
+        <ion-icon name="add-outline"></ion-icon> Nuevo Curso
+      </button>
+    </div>
+    <div class="content-card">
+      <div class="content-card-header">
+        <span class="content-card-title">Cursos Activos</span>
+        <span class="badge badge-info">{{ cursos.length }}</span>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Curso</th>
+            <th>Año</th>
+            <th>Profesor Jefe</th>
+            <th>Alumnos</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of cursos">
+            <td><strong>{{ c.nivel }}{{ c.letra }}</strong></td>
+            <td>{{ c.anio }}</td>
+            <td>{{ getProfesor(c.profesorJefeId) }}</td>
+            <td><span class="badge badge-info">{{ c.alumnosIds?.length || 0 }}</span></td>
+          </tr>
+          <tr *ngIf="cursos.length === 0">
+            <td colspan="4" style="text-align:center;padding:32px;color:#718096">
+              {{ loading ? 'Cargando...' : 'No hay cursos' }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</app-layout>
+
+<div class="modal-overlay" *ngIf="showModal" (click)="showModal=false">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <span class="content-card-title">Nuevo Curso</span>
+      <button class="btn-icon" (click)="showModal=false"><ion-icon name="close-outline"></ion-icon></button>
+    </div>
+    <div class="form-group"><label class="form-label">Nivel</label><input class="form-input" [(ngModel)]="nuevo.nivel"
+        placeholder="1°" /></div>
+    <div class="form-group"><label class="form-label">Letra</label><input class="form-input" [(ngModel)]="nuevo.letra"
+        placeholder="A" /></div>
+    <div class="form-group"><label class="form-label">Año</label><input class="form-input" type="number"
+        [(ngModel)]="nuevo.anio" /></div>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn-secondary" style="flex:1" (click)="showModal=false">Cancelar</button>
+      <button class="btn-primary" style="flex:1;justify-content:center" (click)="crear()">Crear</button>
+    </div>
+  </div>
+</div>

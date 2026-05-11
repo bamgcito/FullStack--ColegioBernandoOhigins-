@@ -1,0 +1,33 @@
+<app-layout pageTitle="Tomar Asistencia">
+  <div class="animate-in">
+    <div class="content-card" style="margin-bottom:20px"><div class="content-card-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="form-group"><label class="form-label">Asignación</label>
+          <select class="form-select" (change)="seleccionar(+$any($event.target).value)">
+            <option value="-1">Seleccionar...</option>
+            <option *ngFor="let a of asignaciones; let i=index" [value]="i">{{ a.label }}</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Fecha</label><input class="form-input" type="date" [(ngModel)]="fecha" /></div>
+      </div>
+    </div></div>
+    <div class="content-card" *ngIf="asignacionIdx>=0">
+      <div class="content-card-header"><span class="content-card-title">Lista de Alumnos</span></div>
+      <table class="data-table"><thead><tr><th>Alumno</th><th>Estado</th></tr></thead>
+      <tbody><tr *ngFor="let a of alumnos">
+        <td><strong>{{ a.nombre }} {{ a.apellido }}</strong></td>
+        <td>
+          <div class="estado-btns">
+            <button [class]="registros[a.id]==='PRESENTE' ? 'estado-btn active-p' : 'estado-btn'" (click)="registros[a.id]='PRESENTE'"><ion-icon name="checkmark-outline"></ion-icon> Presente</button>
+            <button [class]="registros[a.id]==='AUSENTE' ? 'estado-btn active-a' : 'estado-btn'" (click)="registros[a.id]='AUSENTE'"><ion-icon name="close-outline"></ion-icon> Ausente</button>
+            <button [class]="registros[a.id]==='ATRASADO' ? 'estado-btn active-t' : 'estado-btn'" (click)="registros[a.id]='ATRASADO'"><ion-icon name="time-outline"></ion-icon> Atrasado</button>
+          </div>
+        </td>
+      </tr></tbody></table>
+      <div style="padding:16px;border-top:1px solid #F0F4F8;display:flex;align-items:center;gap:12px">
+        <button class="btn-primary" (click)="guardar()"><ion-icon name="save-outline"></ion-icon> Guardar Asistencia</button>
+        <span *ngIf="guardado" style="color:#2F855A;font-weight:700;font-size:13px">Asistencia guardada exitosamente</span>
+      </div>
+    </div>
+  </div>
+</app-layout>

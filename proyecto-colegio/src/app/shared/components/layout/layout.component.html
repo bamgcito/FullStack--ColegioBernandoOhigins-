@@ -1,0 +1,145 @@
+<div class="app-layout">
+  <aside class="sidebar" [class.mobile-open]="sidebarOpen">
+    <div class="sidebar-logo">
+      <img src="assets/logo-colegio.png" alt="Logo Colegio" />
+      <div class="school-name">Colegio Bernardo O'Higgins</div>
+      <div class="school-sub">Libro de Clases Digital</div>
+    </div>
+
+    <nav class="sidebar-nav">
+
+      <!-- ADMIN -->
+      <ng-container *ngIf="currentUser?.rol==='ADMIN'">
+        <div class="sidebar-section-label">Principal</div>
+        <a class="nav-item" (click)="navegarA('/admin/dashboard')">
+          <ion-icon name="grid-outline"></ion-icon> Dashboard
+        </a>
+        <div class="sidebar-section-label">Gestión</div>
+        <a class="nav-item" (click)="navegarA('/admin/usuarios')">
+          <ion-icon name="people-outline"></ion-icon> Usuarios
+        </a>
+        <a class="nav-item" (click)="navegarA('/admin/cursos')">
+          <ion-icon name="school-outline"></ion-icon> Cursos
+        </a>
+        <a class="nav-item" (click)="navegarA('/admin/asignaturas')">
+          <ion-icon name="book-outline"></ion-icon> Asignaturas
+        </a>
+        <a class="nav-item" (click)="navegarA('/admin/asignaciones')">
+          <ion-icon name="clipboard-outline"></ion-icon> Asignaciones
+        </a>
+        <div class="sidebar-section-label">Académico</div>
+        <a class="nav-item" (click)="navegarA('/admin/evaluaciones')">
+          <ion-icon name="document-text-outline"></ion-icon> Evaluaciones
+        </a>
+        <a class="nav-item" (click)="navegarA('/admin/notas')">
+          <ion-icon name="star-outline"></ion-icon> Notas
+        </a>
+        <a class="nav-item" (click)="navegarA('/admin/asistencia')">
+          <ion-icon name="checkmark-circle-outline"></ion-icon> Asistencia
+        </a>
+        <a class="nav-item" (click)="navegarA('/admin/anotaciones')">
+          <ion-icon name="pencil-outline"></ion-icon> Anotaciones
+        </a>
+        <div class="sidebar-section-label">Comunicación</div>
+        <a class="nav-item" (click)="navegarA('/admin/comunicaciones')">
+          <ion-icon name="chatbubbles-outline"></ion-icon> Mensajería
+        </a>
+      </ng-container>
+
+      <!-- PROFESOR -->
+      <ng-container *ngIf="currentUser?.rol==='PROFESOR'">
+        <div class="sidebar-section-label">Principal</div>
+        <a class="nav-item" (click)="navegarA('/profesor/dashboard')">
+          <ion-icon name="grid-outline"></ion-icon> Dashboard
+        </a>
+        <div class="sidebar-section-label">Académico</div>
+        <a class="nav-item" (click)="navegarA('/profesor/mis-cursos')">
+          <ion-icon name="school-outline"></ion-icon> Mis Cursos
+        </a>
+        <a class="nav-item" (click)="navegarA('/profesor/asistencia')">
+          <ion-icon name="checkmark-circle-outline"></ion-icon> Tomar Asistencia
+        </a>
+        <a class="nav-item" (click)="navegarA('/profesor/notas')">
+          <ion-icon name="star-outline"></ion-icon> Registrar Notas
+        </a>
+        <a class="nav-item" (click)="navegarA('/profesor/anotaciones')">
+          <ion-icon name="pencil-outline"></ion-icon> Anotaciones
+        </a>
+        <div class="sidebar-section-label">Comunicación</div>
+        <a class="nav-item" (click)="navegarA('/profesor/comunicaciones')">
+          <ion-icon name="chatbubbles-outline"></ion-icon> Mensajería
+        </a>
+      </ng-container>
+
+      <!-- ALUMNO -->
+      <ng-container *ngIf="currentUser?.rol==='ALUMNO'">
+        <div class="sidebar-section-label">Mi Información</div>
+        <a class="nav-item" (click)="navegarA('/alumno/dashboard')">
+          <ion-icon name="grid-outline"></ion-icon> Dashboard
+        </a>
+        <a class="nav-item" (click)="navegarA('/alumno/notas')">
+          <ion-icon name="star-outline"></ion-icon> Mis Notas
+        </a>
+        <a class="nav-item" (click)="navegarA('/alumno/asistencia')">
+          <ion-icon name="checkmark-circle-outline"></ion-icon> Mi Asistencia
+        </a>
+        <a class="nav-item" (click)="navegarA('/alumno/anotaciones')">
+          <ion-icon name="pencil-outline"></ion-icon> Mis Anotaciones
+        </a>
+        <div class="sidebar-section-label">Comunicación</div>
+        <a class="nav-item" (click)="navegarA('/alumno/comunicaciones')">
+          <ion-icon name="chatbubbles-outline"></ion-icon> Mensajería
+        </a>
+      </ng-container>
+
+      <!-- APODERADO -->
+      <ng-container *ngIf="currentUser?.rol==='APODERADO'">
+        <div class="sidebar-section-label">Mi Pupilo</div>
+        <a class="nav-item" (click)="navegarA('/apoderado/dashboard')">
+          <ion-icon name="grid-outline"></ion-icon> Dashboard
+        </a>
+        <a class="nav-item" (click)="navegarA('/apoderado/notas')">
+          <ion-icon name="star-outline"></ion-icon> Notas
+        </a>
+        <a class="nav-item" (click)="navegarA('/apoderado/asistencia')">
+          <ion-icon name="checkmark-circle-outline"></ion-icon> Asistencia
+        </a>
+        <a class="nav-item" (click)="navegarA('/apoderado/anotaciones')">
+          <ion-icon name="pencil-outline"></ion-icon> Anotaciones
+        </a>
+        <div class="sidebar-section-label">Comunicación</div>
+        <a class="nav-item" (click)="navegarA('/apoderado/comunicaciones')">
+          <ion-icon name="chatbubbles-outline"></ion-icon> Mensajería
+        </a>
+      </ng-container>
+
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar">{{ initials }}</div>
+        <div>
+          <div class="user-name">{{ currentUser?.nombre }} {{ currentUser?.apellido }}</div>
+          <div class="user-rol">{{ rolLabel }}</div>
+        </div>
+      </div>
+      <button class="btn-logout" (click)="logout()">
+        <ion-icon name="log-out-outline"></ion-icon> Cerrar Sesión
+      </button>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <div class="topbar">
+      <button class="topbar-menu-btn" (click)="sidebarOpen = !sidebarOpen">
+        <ion-icon name="menu-outline"></ion-icon>
+      </button>
+      <span class="topbar-title">{{ pageTitle }}</span>
+      <span class="topbar-date">{{ today }}</span>
+    </div>
+    <div class="sidebar-overlay" *ngIf="sidebarOpen" (click)="closeSidebar()"></div>
+    <div class="page-content">
+      <ng-content></ng-content>
+    </div>
+  </div>
+</div>

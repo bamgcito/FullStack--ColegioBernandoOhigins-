@@ -1,0 +1,105 @@
+:host {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow-y: auto;
+}
+
+.landing-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background: #0a1628;
+}
+
+.bg-logo {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bg-logo img {
+  width: 70vmin;
+  height: 70vmin;
+  object-fit: contain;
+  opacity: 0.07;
+  filter: blur(3px);
+}
+
+.landing-card {
+  position: relative;
+  z-index: 1;
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 20px;
+  padding: 48px 40px;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+}
+
+.landing-logo {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(255,255,255,0.25);
+  margin-bottom: 20px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+
+.landing-title {
+  font-family: 'Nunito', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.2;
+  margin-bottom: 6px;
+}
+
+.landing-subtitle { font-size: 13px; color: rgba(255,255,255,0.55); margin-bottom: 4px; }
+.landing-year { font-size: 12px; color: rgba(255,255,255,0.3); margin-bottom: 24px; }
+.divider { width: 40px; height: 2px; background: rgba(255,255,255,0.2); margin: 0 auto 28px; }
+
+.btn-ingresar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px 24px;
+  background: #1E3A5F;
+  color: white;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 800;
+  font-family: 'Nunito', sans-serif;
+  text-decoration: none;
+  transition: all 0.2s;
+
+  ion-icon { font-size: 18px; }
+
+  &:hover {
+    background: #2B5080;
+    transform: translateY(-2px);
+  }
+}
+
+.landing-footer-text {
+  margin-top: 20px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.2);
+}

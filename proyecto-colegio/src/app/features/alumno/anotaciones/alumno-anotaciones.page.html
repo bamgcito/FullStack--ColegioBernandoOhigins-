@@ -1,0 +1,25 @@
+<app-layout pageTitle="Mis Anotaciones">
+  <div class="animate-in">
+    <div class="content-card">
+      <div class="content-card-header">
+        <span class="content-card-title">Anotaciones</span>
+        <span class="badge badge-info">{{ anotaciones.length }}</span>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr><th>Tipo</th><th>Descripción</th><th>Fecha</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let a of anotaciones">
+            <td><span class="badge" [ngClass]="badge(a.tipo)">{{ a.tipo }}</span></td>
+            <td>{{ a.descripcion }}</td>
+            <td style="font-size:12px;color:#718096">{{ a.fecha }}</td>
+          </tr>
+          <tr *ngIf="anotaciones.length===0">
+            <td colspan="3" style="text-align:center;padding:20px;color:#718096">Sin anotaciones</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</app-layout>

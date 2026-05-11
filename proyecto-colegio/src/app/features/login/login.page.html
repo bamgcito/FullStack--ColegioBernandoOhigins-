@@ -1,0 +1,54 @@
+<ion-content>
+  <div class="login-wrapper">
+    <div class="login-left">
+      <div class="login-left-content">
+        <img src="assets/logo-colegio.png" alt="Logo" class="login-logo" />
+        <h1 class="school-name">Colegio Bernardo O'Higgins</h1>
+        <p class="school-location">Coquimbo · Chile</p>
+        <div class="login-divider"></div>
+        <p class="login-tagline">Plataforma de Libro de Clases Digital</p>
+        <div class="login-roles-info">
+          <div class="role-hint"><ion-icon name="shield-checkmark-outline"></ion-icon> Administrador</div>
+          <div class="role-hint"><ion-icon name="person-outline"></ion-icon> Profesor</div>
+          <div class="role-hint"><ion-icon name="school-outline"></ion-icon> Alumno</div>
+          <div class="role-hint"><ion-icon name="people-outline"></ion-icon> Apoderado</div>
+        </div>
+      </div>
+    </div>
+    <div class="login-right">
+      <div class="login-form-container">
+        <div class="form-header">
+          <h2>Iniciar Sesión</h2>
+          <p>Ingresa con tu RUT y contraseña institucional</p>
+        </div>
+        <div class="alert-error" *ngIf="errorMsg">
+          <ion-icon name="alert-circle-outline"></ion-icon> {{ errorMsg }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">RUT</label>
+          <input class="form-input" type="text" placeholder="Ej: 12345678-9" [(ngModel)]="rut"
+            (keyup.enter)="login()" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contraseña</label>
+          <div class="input-password-wrapper">
+            <input class="form-input" [type]="showPassword ? 'text' : 'password'" placeholder="Ingresa tu contraseña"
+              [(ngModel)]="password" (keyup.enter)="login()" />
+            <button class="btn-toggle-pw" type="button" (click)="showPassword = !showPassword">
+              <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+            </button>
+          </div>
+        </div>
+        <button class="btn-login" (click)="login()" [disabled]="loading">
+          <ion-icon name="log-in-outline" *ngIf="!loading"></ion-icon>
+          <span>{{ loading ? 'Verificando...' : 'Ingresar' }}</span>
+        </button>
+        <div class="login-back">
+          <a routerLink="/">
+            <ion-icon name="arrow-back-outline"></ion-icon> Volver al inicio
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>

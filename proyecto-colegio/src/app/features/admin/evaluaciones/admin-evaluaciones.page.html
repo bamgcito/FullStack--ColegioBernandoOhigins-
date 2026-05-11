@@ -1,0 +1,9 @@
+<app-layout pageTitle="Evaluaciones">
+  <div class="animate-in">
+    <div class="content-card">
+      <div class="content-card-header"><span class="content-card-title">Evaluaciones Registradas</span><span class="badge badge-info">{{ evaluaciones.length }}</span></div>
+      <table class="data-table"><thead><tr><th>Nombre</th><th>Asignación</th><th>Fecha</th><th>Descripción</th></tr></thead>
+      <tbody><tr *ngFor="let e of evaluaciones"><td><strong>{{ e.nombre }}</strong></td><td style="font-size:12px">{{ getAsignacion(e.asignacionDocenteId) }}</td><td style="font-size:12px;color:#718096">{{ e.fecha }}</td><td style="font-size:12px;color:#718096">{{ e.descripcion }}</td></tr></tbody></table>
+    </div>
+  </div>
+</app-layout>

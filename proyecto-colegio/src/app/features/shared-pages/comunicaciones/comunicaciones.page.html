@@ -1,0 +1,47 @@
+<app-layout pageTitle="Mensajería">
+  <div class="chat-layout animate-in">
+    <div class="conv-list">
+      <div class="conv-list-header"><span class="content-card-title">Conversaciones</span></div>
+      <div *ngIf="conversaciones.length===0" style="padding:20px;text-align:center;color:#718096;font-size:13px">Sin conversaciones activas</div>
+      <div class="conv-item" *ngFor="let c of conversaciones" [class.active]="activa?.id===c.id" (click)="seleccionar(c)">
+        <div class="conv-avatar">{{ c.otro?.iniciales || '?' }}</div>
+        <div class="conv-info">
+          <div class="conv-nombre">{{ c.otro?.nombre }} {{ c.otro?.apellido }}</div>
+          <div class="conv-ultimo">{{ c.ultimoMensaje }}</div>
+        </div>
+        <div class="conv-meta">
+          <div class="conv-fecha">{{ fechaCorta(c.fechaUltimoMensaje) }}</div>
+          <div class="conv-badge" *ngIf="c.sinLeer>0">{{ c.sinLeer }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="chat-panel" *ngIf="activa; else sinSel">
+      <div class="chat-header">
+        <div class="chat-avatar">{{ activa.otro?.iniciales }}</div>
+        <div>
+          <div class="chat-nombre">{{ activa.otro?.nombre }} {{ activa.otro?.apellido }}</div>
+          <div style="font-size:12px;color:#718096">{{ activa.otro?.rol }}</div>
+        </div>
+      </div>
+      <div class="mensajes-lista">
+        <div *ngFor="let m of mensajes" class="mensaje-row" [class.mio]="esMio(m)">
+          <div class="chat-bubble" [class.sent]="esMio(m)" [class.received]="!esMio(m)">
+            {{ m.contenido }}
+            <div class="msg-hora">{{ hora(m.fecha) }}</div>
+          </div>
+        </div>
+        <div *ngIf="mensajes.length===0" style="text-align:center;color:#718096;font-size:13px;margin:auto">Inicia la conversación</div>
+      </div>
+      <div class="chat-input-bar">
+        <input class="form-input chat-input" type="text" placeholder="Escribe un mensaje..." [(ngModel)]="nuevoMensaje" (keyup.enter)="enviar()" />
+        <button class="btn-send" (click)="enviar()"><ion-icon name="send-outline"></ion-icon></button>
+      </div>
+    </div>
+    <ng-template #sinSel>
+      <div class="chat-empty">
+        <ion-icon name="chatbubbles-outline" style="font-size:48px;color:#CBD5E0"></ion-icon>
+        <p style="color:#718096;font-weight:600">Selecciona una conversación</p>
+      </div>
+    </ng-template>
+  </div>
+</app-layout>

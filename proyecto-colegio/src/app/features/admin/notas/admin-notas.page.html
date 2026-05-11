@@ -1,0 +1,9 @@
+<app-layout pageTitle="Registro de Notas">
+  <div class="animate-in">
+    <div class="content-card">
+      <div class="content-card-header"><span class="content-card-title">Notas Registradas</span><span class="badge badge-info">{{ notas.length }}</span></div>
+      <table class="data-table"><thead><tr><th>Alumno</th><th>Evaluación</th><th>Nota</th></tr></thead>
+      <tbody><tr *ngFor="let n of notas"><td>{{ getAlumno(n.alumnoId) }}</td><td>{{ getEvaluacion(n.evaluacionId) }}</td><td><span class="nota-chip" [ngClass]="notaClass(n.nota)">{{ n.nota }}</span></td></tr></tbody></table>
+    </div>
+  </div>
+</app-layout>

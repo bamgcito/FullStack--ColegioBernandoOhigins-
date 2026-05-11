@@ -1,0 +1,9 @@
+<app-layout pageTitle="Registro de Asistencia">
+  <div class="animate-in">
+    <div class="content-card">
+      <div class="content-card-header"><span class="content-card-title">Asistencia General</span><span class="badge badge-info">{{ registros.length }} registros</span></div>
+      <table class="data-table"><thead><tr><th>Alumno</th><th>Asignatura</th><th>Fecha</th><th>Estado</th></tr></thead>
+      <tbody><tr *ngFor="let r of registros"><td>{{ getAlumno(r.alumnoId) }}</td><td>{{ getAsignatura(r.asignacionDocenteId) }}</td><td style="font-size:12px;color:#718096">{{ r.fecha }}</td><td><span class="badge" [ngClass]="badge(r.estado)">{{ r.estado }}</span></td></tr></tbody></table>
+    </div>
+  </div>
+</app-layout>

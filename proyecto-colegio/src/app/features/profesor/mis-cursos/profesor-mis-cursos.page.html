@@ -1,0 +1,9 @@
+<app-layout pageTitle="Mis Cursos">
+  <div class="animate-in">
+    <div *ngFor="let c of cursos" class="content-card">
+      <div class="content-card-header"><span class="content-card-title">{{ c.asignatura }} — {{ c.cursoNombre }}</span><span class="badge badge-info">{{ c.alumnos.length }} alumnos</span></div>
+      <table class="data-table"><thead><tr><th>Nombre</th><th>RUT</th><th>Edad</th></tr></thead>
+      <tbody><tr *ngFor="let a of c.alumnos"><td><strong>{{ a.nombre }} {{ a.apellido }}</strong></td><td style="font-family:monospace;font-size:12px">{{ a.rut }}</td><td>{{ a.edad }} años</td></tr></tbody></table>
+    </div>
+  </div>
+</app-layout>
