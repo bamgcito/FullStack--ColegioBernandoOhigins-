@@ -4,3 +4,9 @@ dist/
 .angular/
 target/
 .env
+*.zip
+node_modules/
+dist/
+.angular/
+target/
+.env
