@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,7 +32,9 @@ public class AsignaturaController {
     }
 
     @GetMapping("/{id}/detalle")
-    public Object obtenerDetalle(@PathVariable Long id, @RequestParam Long cursoId) {
-        return asignaturaService.obtenerDetalle(id, cursoId);
+    public Object obtenerDetalle(@PathVariable Long id,
+            @RequestParam Long cursoId,
+            @RequestHeader(value = "Authorization", required = false) String auth) {
+        return asignaturaService.obtenerDetalle(id, cursoId, auth);
     }
 }

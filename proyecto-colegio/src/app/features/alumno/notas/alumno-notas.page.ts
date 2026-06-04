@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonContent, IonIcon } from '@ionic/angular/standalone';
 import { LayoutComponent } from '../../../shared/components/layout/layout.component';
@@ -12,8 +12,7 @@ import { ApiService } from '../../../core/services/api.service';
   standalone: true,
   imports: [CommonModule, IonContent, IonIcon, LayoutComponent],
   templateUrl: './alumno-notas.page.html',
-  styleUrls: ['./alumno-notas.page.scss'],
-  host: { class: 'ion-page' }
+  styleUrls: ['./alumno-notas.page.scss']
 })
 export class AlumnoNotasPage implements OnInit {
   promedio = 0;
@@ -31,12 +30,12 @@ export class AlumnoNotasPage implements OnInit {
     this.api.getNotasAlumno(rut).subscribe({
       next: notas => {
         this.api.getPromedioAlumno(rut).subscribe({
-          next: p => { this.promedio = typeof p === 'number' ? p : p?.promedio ?? 0; }
+          next: p => { this.promedio = typeof p === 'number' ? p : p?.promedioGeneral ?? 0; }
         });
         const mapa: Record<number, any> = {};
         notas.forEach((n: any) => {
           const aid = n.asignacionId || n.asignacionDocenteId || 0;
-          if (!mapa[aid]) mapa[aid] = { id: aid, nombre: n.asignatura || `Asig. ${aid}`, notas: [] };
+          if (!mapa[aid]) mapa[aid] = { id: aid, nombre: n.nombreAsignatura || n.asignatura || `Asig. ${aid}`, notas: [] };
           mapa[aid].notas.push(n);
         });
         this.asignaturas = Object.values(mapa).map((a: any) => ({

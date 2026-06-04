@@ -1,33 +1,54 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonContent, IonIcon } from '@ionic/angular/standalone';
 import { LayoutComponent } from '../../../shared/components/layout/layout.component';
 import { addIcons } from 'ionicons';
 import { starOutline } from 'ionicons/icons';
 import { AuthService } from '../../../core/services/auth.service';
-import * as Mock from '../../../shared/mocks/mock-data';
+import { ApiService } from '../../../core/services/api.service';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-apoderado-notas',
   standalone: true,
   imports: [CommonModule, IonContent, IonIcon, LayoutComponent],
   templateUrl: './apoderado-notas.page.html',
-  styleUrls: ['./apoderado-notas.page.scss'],
-  host: { class: 'ion-page' }
+  styleUrls: ['./apoderado-notas.page.scss']
 })
 export class ApoderadoNotasPage implements OnInit {
-  alumnoId = 0;
   pupiloNombre = '';
-  items: any[] = [];
-  constructor(private auth: AuthService) { addIcons({ starOutline }); }
+  notas: any[] = [];
+  promedio = 0;
+  sinAlumno = false;
+
+  constructor(private auth: AuthService, private api: ApiService) { addIcons({ starOutline }); }
+
   ngOnInit() {
-    const uid = this.auth.currentUser?.id ?? 0;
-    const ap = Mock.APODERADOS_MOCK.find(a => a.id === uid);
-    this.alumnoId = ap?.alumnosIds[0] ?? 0;
-    const al = Mock.ALUMNOS_MOCK.find(a => a.id === this.alumnoId);
-    this.pupiloNombre = al ? `${al.nombre} ${al.apellido}` : '';
-    this.items = Mock.getNotasByAlumno(this.alumnoId);
+    const apoderadoId = this.auth.currentUser?.id ?? 0;
+    if (!apoderadoId) { this.sinAlumno = true; return; }
+    this.api.getAlumnosDeApoderado(apoderadoId).subscribe({
+      next: alumnos => {
+        if (!alumnos?.length) { this.sinAlumno = true; return; }
+        const pupilo = alumnos[0];
+        this.pupiloNombre = `${pupilo.nombre} ${pupilo.apellido}`;
+        const rut = pupilo.rut;
+        forkJoin({
+          notas: this.api.getNotasAlumno(rut),
+          promedio: this.api.getPromedioAlumno(rut)
+        }).subscribe({
+          next: ({ notas, promedio }) => {
+            this.notas = notas;
+            this.promedio = typeof promedio === 'number' ? promedio : (promedio?.promedioGeneral ?? 0);
+          }
+        });
+      }
+    });
   }
-  badge(v: string) { return { POSITIVA: 'badge-success', NEGATIVA: 'badge-danger', NEUTRA: 'badge-neutral', PRESENTE: 'badge-success', AUSENTE: 'badge-danger', ATRASADO: 'badge-warning' }[v] || 'badge-neutral'; }
-  notaClass(n: number) { if (n >= 6) return 'excelente'; if (n >= 5) return 'buena'; if (n >= 4) return 'suficiente'; return 'reprobado'; }
+
+  notaClass(n: number) {
+    if (n >= 6) return 'excelente';
+    if (n >= 5) return 'buena';
+    if (n >= 4) return 'suficiente';
+    return 'reprobado';
+  }
 }

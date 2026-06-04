@@ -21,12 +21,13 @@
       <table class="data-table"><thead><tr><th>Alumno</th><th style="width:160px">Nota (1.0 — 7.0)</th><th>Preview</th></tr></thead>
       <tbody><tr *ngFor="let a of alumnos">
         <td><strong>{{ a.nombre }} {{ a.apellido }}</strong></td>
-        <td><input type="number" class="form-input" min="1" max="7" step="0.1" [(ngModel)]="notasReg[a.id]" style="max-width:120px" /></td>
-        <td><span class="nota-chip" [ngClass]="notaClass(notasReg[a.id])">{{ notasReg[a.id] || '—' }}</span></td>
+        <td><input type="number" class="form-input" min="1" max="7" step="0.1" [(ngModel)]="notasReg[a.rut]" style="max-width:120px" /></td>
+        <td><span class="nota-chip" [ngClass]="notaClass(notasReg[a.rut])">{{ notasReg[a.rut] || '—' }}</span></td>
       </tr></tbody></table>
       <div style="padding:16px;border-top:1px solid #F0F4F8;display:flex;align-items:center;gap:12px">
         <button class="btn-primary" (click)="guardar()"><ion-icon name="save-outline"></ion-icon> Guardar Notas</button>
         <span *ngIf="guardado" style="color:#2F855A;font-weight:700;font-size:13px">Notas guardadas exitosamente</span>
+        <span *ngIf="errorMsg" style="color:#C53030;font-weight:700;font-size:13px">{{ errorMsg }}</span>
       </div>
     </div>
   </div>

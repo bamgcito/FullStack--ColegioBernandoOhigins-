@@ -1,12 +1,32 @@
 <app-layout [pageTitle]="'Panel — ' + (pupilo?.nombre || 'Apoderado')">
   <div class="animate-in">
-    <div class="welcome-banner" *ngIf="pupilo">
+
+    <!-- Banner alumno seleccionado -->
+    <div class="welcome-banner" *ngIf="pupilo"
+         [class.clickable]="alumnos.length > 1"
+         (click)="alumnos.length > 1 && (showSelector = !showSelector)">
       <div class="welcome-avatar">{{ pupilo.nombre?.[0] }}</div>
-      <div>
+      <div style="flex:1">
         <div class="welcome-title">{{ pupilo.nombre }} {{ pupilo.apellido }}</div>
         <div class="welcome-sub">Curso {{ cursoLabel }} &nbsp;·&nbsp; Profesor Jefe: {{ profeJefeNombre }}</div>
       </div>
+      <ion-icon *ngIf="alumnos.length > 1" name="chevron-down-outline" class="banner-chevron"
+                [class.rotated]="showSelector"></ion-icon>
     </div>
+
+    <!-- Selector de pupilos -->
+    <div *ngIf="showSelector && alumnos.length > 1" class="alumno-selector">
+      <div *ngFor="let a of alumnos" class="alumno-option"
+           [class.active]="a.rut === pupilo?.rut"
+           (click)="seleccionarAlumno(a)">
+        <div class="alumno-option-avatar">{{ a.nombre?.[0] }}</div>
+        <div>
+          <div class="alumno-option-nombre">{{ a.nombre }} {{ a.apellido }}</div>
+          <div class="alumno-option-rut">{{ a.rut }}</div>
+        </div>
+      </div>
+    </div>
+
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-icon blue"><ion-icon name="stats-chart-outline"></ion-icon></div>

@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,13 +19,15 @@ public class AnotacionController {
     private AnotacionService anotacionService;
 
     @PostMapping
-    public String registrarAnotacion(@RequestBody AnotacionDTO dto) {
-        return anotacionService.registrarAnotacion(dto);
+    public String registrarAnotacion(@RequestBody AnotacionDTO dto,
+            @RequestHeader("Authorization") String auth) {
+        return anotacionService.registrarAnotacion(dto, auth);
     }
 
     @GetMapping("/alumno/{rut}")
-    public Object obtenerAnotacionesPorAlumno(@PathVariable String rut) {
-        return anotacionService.obtenerAnotacionesPorAlumno(rut);
+    public Object obtenerAnotacionesPorAlumno(@PathVariable String rut,
+            @RequestHeader(value = "Authorization", required = false) String auth) {
+        return anotacionService.obtenerAnotacionesPorAlumno(rut, auth);
     }
 
     @GetMapping("/asignacion/{asignacionId}")

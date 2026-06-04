@@ -27,6 +27,7 @@
       <div style="padding:16px;border-top:1px solid #F0F4F8;display:flex;align-items:center;gap:12px">
         <button class="btn-primary" (click)="guardar()"><ion-icon name="save-outline"></ion-icon> Guardar Asistencia</button>
         <span *ngIf="guardado" style="color:#2F855A;font-weight:700;font-size:13px">Asistencia guardada exitosamente</span>
+        <span *ngIf="errorMsg" style="color:#C53030;font-weight:700;font-size:13px">{{ errorMsg }}</span>
       </div>
     </div>
   </div>

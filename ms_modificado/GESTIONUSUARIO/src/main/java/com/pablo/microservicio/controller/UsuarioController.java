@@ -3,6 +3,7 @@ package com.pablo.microservicio.controller;
 import com.pablo.microservicio.dto.*;
 import com.pablo.microservicio.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,13 +16,8 @@ public class UsuarioController {
     private UsuarioService usuarioService;
 
     @PostMapping("/login")
-    public Object login(@RequestBody LoginDTO solicitud) {
+    public ResponseEntity<Object> login(@RequestBody LoginDTO solicitud) {
         return usuarioService.login(solicitud);
-    }
-
-    @PostMapping("/bootstrap")
-    public String bootstrap() {
-        return usuarioService.bootstrap();
     }
 
     @PostMapping
@@ -42,6 +38,11 @@ public class UsuarioController {
     @GetMapping("/rut/{rut}")
     public UsuarioDTO buscarPorRut(@PathVariable String rut) {
         return usuarioService.buscarPorRut(rut);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> eliminarUsuario(@PathVariable Long id) {
+        return usuarioService.eliminarUsuario(id);
     }
 
     @PostMapping("/alumnos")
@@ -82,5 +83,10 @@ public class UsuarioController {
     @GetMapping("/alumnos/id/{id}")
     public AlumnoDTO buscarAlumnoPorId(@PathVariable Long id) {
         return usuarioService.buscarAlumnoPorId(id);
+    }
+
+    @GetMapping("/apoderados/{id}/alumnos")
+    public ResponseEntity<Object> alumnosDeApoderado(@PathVariable Long id) {
+        return usuarioService.obtenerAlumnosDeApoderado(id);
     }
 }

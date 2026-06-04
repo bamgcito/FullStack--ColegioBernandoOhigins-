@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,22 +22,26 @@ public class NotaController {
     private NotaService notaService;
 
     @PostMapping
-    public String registrarNota(@RequestBody NotaDTO dto) {
-        return notaService.registrarNota(dto);
+    public String registrarNota(@RequestBody NotaDTO dto,
+            @RequestHeader("Authorization") String auth) {
+        return notaService.registrarNota(dto, auth);
     }
 
     @GetMapping("/alumno")
-    public Object listarNotasAlumno(@RequestParam String rutAlumno) {
-        return notaService.listarNotasAlumno(rutAlumno);
+    public Object listarNotasAlumno(@RequestParam String rutAlumno,
+            @RequestHeader("Authorization") String auth) {
+        return notaService.listarNotasAlumno(rutAlumno, auth);
     }
 
     @GetMapping("/alumno/promedio")
-    public Object calcularPromedio(@RequestParam String rutAlumno) {
-        return notaService.calcularPromedioAlumno(rutAlumno);
+    public Object calcularPromedio(@RequestParam String rutAlumno,
+            @RequestHeader("Authorization") String auth) {
+        return notaService.calcularPromedioAlumno(rutAlumno, auth);
     }
 
     @GetMapping("/evaluacion/{evaluacionId}")
-    public List<NotaDTO> listarPorEvaluacion(@PathVariable Long evaluacionId) {
-        return notaService.listarPorEvaluacion(evaluacionId);
+    public List<NotaDTO> listarPorEvaluacion(@PathVariable Long evaluacionId,
+            @RequestHeader("Authorization") String auth) {
+        return notaService.listarPorEvaluacion(evaluacionId, auth);
     }
 }

@@ -31,6 +31,8 @@ export class ApiService {
     getInfoAlumno(rut: string): Observable<any> { return this.http.get<any>(`${this.base}/usuarios/alumnos/${rut}/info`); }
     getAlumnoPorId(id: number): Observable<any> { return this.http.get<any>(`${this.base}/usuarios/alumnos/id/${id}`); }
     getProfesorPorId(id: number): Observable<any> { return this.http.get<any>(`${this.base}/usuarios/profesores/${id}`); }
+    eliminarUsuario(id: number): Observable<any> { return this.http.delete<any>(`${this.base}/usuarios/${id}`); }
+    getAlumnosDeApoderado(id: number): Observable<any[]> { return this.http.get<any[]>(`${this.base}/usuarios/apoderados/${id}/alumnos`); }
 
     // CURSOS
     getCursos(): Observable<any[]> { return this.http.get<any[]>(`${this.base}/cursos`); }
@@ -40,6 +42,10 @@ export class ApiService {
     asignarProfesorJefe(cursoId: number, data: any): Observable<any> {
         return this.http.put<any>(`${this.base}/cursos/${cursoId}/profesor-jefe`, data);
     }
+    getCursoById(id: number): Observable<any> { return this.http.get<any>(`${this.base}/cursos/${id}`); }
+    getAlumnosDeCurso(id: number): Observable<any[]> { return this.http.get<any[]>(`${this.base}/cursos/${id}/alumnos`); }
+    getCursosByProfesor(profesorId: number): Observable<any[]> { return this.http.get<any[]>(`${this.base}/cursos/profesor/${profesorId}`); }
+    asignarAlumnoACurso(data: any): Observable<any> { return this.http.post<any>(`${this.base}/cursos/alumnos`, data); }
 
     // ASIGNATURAS
     getAsignaturas(): Observable<any[]> { return this.http.get<any[]>(`${this.base}/academico/asignaturas`); }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonContent, IonIcon } from '@ionic/angular/standalone';
 import { LayoutComponent } from '../../../shared/components/layout/layout.component';
@@ -12,8 +12,7 @@ import { ApiService } from '../../../core/services/api.service';
   standalone: true,
   imports: [CommonModule, IonContent, IonIcon, LayoutComponent],
   templateUrl: './alumno-anotaciones.page.html',
-  styleUrls: ['./alumno-anotaciones.page.scss'],
-  host: { class: 'ion-page' }
+  styleUrls: ['./alumno-anotaciones.page.scss']
 })
 export class AlumnoAnotacionesPage implements OnInit {
   anotaciones: any[] = [];

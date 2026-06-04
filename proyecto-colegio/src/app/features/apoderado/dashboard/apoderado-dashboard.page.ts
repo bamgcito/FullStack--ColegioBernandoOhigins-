@@ -4,61 +4,77 @@ import { RouterLink } from '@angular/router';
 import { IonContent, IonIcon } from '@ionic/angular/standalone';
 import { LayoutComponent } from '../../../shared/components/layout/layout.component';
 import { addIcons } from 'ionicons';
-import { statsChartOutline, checkmarkCircleOutline, pencilOutline } from 'ionicons/icons';
+import { statsChartOutline, checkmarkCircleOutline, pencilOutline, chevronDownOutline } from 'ionicons/icons';
 import { AuthService } from '../../../core/services/auth.service';
 import { ApiService } from '../../../core/services/api.service';
 import { forkJoin } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 @Component({
   selector: 'app-apoderado-dashboard',
   standalone: true,
   imports: [CommonModule, RouterLink, IonContent, IonIcon, LayoutComponent],
   templateUrl: './apoderado-dashboard.page.html',
-  styleUrls: ['./apoderado-dashboard.page.scss'],
-  host: { class: 'ion-page' }
+  styleUrls: ['./apoderado-dashboard.page.scss']
 })
 export class ApoderadoDashboardPage implements OnInit {
+  alumnos: any[] = [];
   pupilo: any = null;
   cursoLabel = '—'; profeJefeNombre = 'Sin asignar';
   promedio = 0; asistencia = 0;
   anotaciones: any[] = []; notas: any[] = [];
+  showSelector = false;
 
   constructor(private auth: AuthService, private api: ApiService) {
-    addIcons({ statsChartOutline, checkmarkCircleOutline, pencilOutline });
+    addIcons({ statsChartOutline, checkmarkCircleOutline, pencilOutline, chevronDownOutline });
   }
 
   ngOnInit() {
-    // getUsuarios() solo devuelve id, rut, nombreRol — sin nombre/apellido
-    // necesitamos buscar el alumno completo con getAlumnoPorId
-    this.api.getUsuarios().subscribe({
-      next: usuarios => {
-        const usuarioAlumno = usuarios.find((u: any) => (u.nombreRol || u.rol) === 'ALUMNO');
-        if (!usuarioAlumno) return;
+    const apoderadoId = this.auth.currentUser?.id ?? 0;
+    if (!apoderadoId) return;
 
-        // Traer datos completos del alumno (nombre, apellido, rut)
-        this.api.getAlumnoPorId(usuarioAlumno.id).subscribe({
-          next: alumno => {
-            this.pupilo = alumno;
-            const rut = alumno.rut;
+    this.api.getAlumnosDeApoderado(apoderadoId).pipe(catchError(() => of([]))).subscribe({
+      next: (alumnos: any[]) => {
+        this.alumnos = alumnos || [];
+        if (!this.alumnos.length) return;
+        this.seleccionarAlumno(this.alumnos[0]);
+      }
+    });
+  }
 
-            forkJoin({
-              notas: this.api.getNotasAlumno(rut),
-              asistencia: this.api.getAsistenciaAlumno(rut),
-              anotaciones: this.api.getAnotacionesAlumno(rut),
-              promedio: this.api.getPromedioAlumno(rut),
-              info: this.api.getInfoAlumno(rut)
-            }).subscribe({
-              next: ({ notas, asistencia, anotaciones, promedio, info }) => {
-                this.notas = notas.slice(0, 4);
-                this.promedio = typeof promedio === 'number' ? promedio : promedio?.promedio ?? 0;
-                this.asistencia = asistencia.length ? Math.round(asistencia.filter((r: any) => r.estado !== 'AUSENTE').length / asistencia.length * 100) : 0;
-                this.anotaciones = anotaciones.slice(0, 3);
-                if (info?.curso) this.cursoLabel = `${info.curso.nivel || ''}${info.curso.letra || ''}`;
-                if (info?.profesorJefe) this.profeJefeNombre = `${info.profesorJefe.nombre} ${info.profesorJefe.apellido}`;
-              }
-            });
-          }
-        });
+  seleccionarAlumno(alumno: any) {
+    this.pupilo = alumno;
+    this.showSelector = false;
+    this.cursoLabel = '—';
+    this.profeJefeNombre = 'Sin asignar';
+    this.promedio = 0;
+    this.asistencia = 0;
+    this.anotaciones = [];
+    this.notas = [];
+    this.cargarDatos(alumno.rut);
+  }
+
+  private cargarDatos(rut: string) {
+    forkJoin({
+      notas: this.api.getNotasAlumno(rut).pipe(catchError(() => of([]))),
+      asistencia: this.api.getAsistenciaAlumno(rut).pipe(catchError(() => of([]))),
+      anotaciones: this.api.getAnotacionesAlumno(rut).pipe(catchError(() => of([]))),
+      promedio: this.api.getPromedioAlumno(rut).pipe(catchError(() => of(null))),
+      cursos: this.api.getCursos().pipe(catchError(() => of([])))
+    }).subscribe({
+      next: ({ notas, asistencia, anotaciones, promedio, cursos }) => {
+        this.notas = notas.slice(0, 4);
+        this.promedio = typeof promedio === 'number' ? promedio : (promedio?.promedioGeneral ?? 0);
+        this.asistencia = asistencia.length
+          ? Math.round(asistencia.filter((r: any) => r.estado !== 'AUSENTE').length / asistencia.length * 100)
+          : 0;
+        this.anotaciones = anotaciones.slice(0, 3);
+        const miCurso = cursos.find((c: any) => c.alumnos?.some((a: any) => a.rut === rut));
+        if (miCurso) {
+          this.cursoLabel = `${miCurso.nivel}${miCurso.letra}`;
+          this.profeJefeNombre = miCurso.nombreProfesorJefe || 'Sin asignar';
+        }
       }
     });
   }

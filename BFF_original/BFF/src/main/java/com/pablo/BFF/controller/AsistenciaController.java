@@ -34,7 +34,7 @@ public class AsistenciaController {
     @PostMapping
     public ResponseEntity<Object> registrarAsistencia(@RequestBody Map<String, Object> body,
                                                        @RequestHeader("Authorization") String auth) {
-        return ms.post(ms.urlAsistencia(), "/asistencia", body, token(auth));
+        return ms.postForText(ms.urlAsistencia(), "/asistencia", body, token(auth));
     }
 
     @GetMapping("/anotaciones/alumno/{rut}")
@@ -52,7 +52,7 @@ public class AsistenciaController {
     @PostMapping("/anotaciones")
     public ResponseEntity<Object> registrarAnotacion(@RequestBody Map<String, Object> body,
                                                       @RequestHeader("Authorization") String auth) {
-        return ms.post(ms.urlAsistencia(), "/anotaciones", body, token(auth));
+        return ms.postForText(ms.urlAsistencia(), "/anotaciones", body, token(auth));
     }
 
     private String token(String auth) { return auth.replace("Bearer ", ""); }

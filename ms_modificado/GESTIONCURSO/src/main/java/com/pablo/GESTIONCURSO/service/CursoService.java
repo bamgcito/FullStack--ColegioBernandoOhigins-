@@ -12,10 +12,15 @@ import com.pablo.GESTIONCURSO.repository.CursoAlumnoRepository;
 import com.pablo.GESTIONCURSO.repository.CursoRepository;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CursoService {
@@ -33,43 +38,88 @@ public class CursoService {
         return "Curso creado exitosamente.";
     }
 
-    public List<CursoDTO> listarCursos() {
+    public List<CursoDTO> listarCursos(String auth) {
         List<Curso> cursos = cursoRepository.findAll();
         List<CursoDTO> lista = new ArrayList<>();
         for (Curso c : cursos) {
             CursoDTO dto = CursoDTO.desde(c);
-            if (c.getProfesorJefeId() != null) {
-                ProfesorDTO profesor = restTemplate.getForObject(
-                    "http://GESTIONUSUARIO/usuarios/profesores/" + c.getProfesorJefeId(), ProfesorDTO.class);
-                if (profesor != null) {
-                    dto.setNombreProfesorJefe(profesor.getNombre() + " " + profesor.getApellido());
-                }
+            if (auth != null && c.getProfesorJefeId() != null) {
+                try {
+                    HttpHeaders headers = new HttpHeaders();
+                    headers.set("Authorization", auth);
+                    ProfesorDTO profesor = restTemplate.exchange(
+                        "http://GESTIONUSUARIO/usuarios/profesores/" + c.getProfesorJefeId(),
+                        HttpMethod.GET, new HttpEntity<>(headers), ProfesorDTO.class).getBody();
+                    if (profesor != null) {
+                        dto.setNombreProfesorJefe(profesor.getNombre() + " " + profesor.getApellido());
+                    }
+                } catch (Exception e) { /* servicio no disponible */ }
             }
-            List<CursoAlumno> relaciones = cursoAlumnoRepository.findByCursoId(c.getId());
-            List<AlumnoDetalleDTO> alumnos = new ArrayList<>();
-            for (CursoAlumno ca : relaciones) {
-                UsuarioDTO usuario = restTemplate.getForObject(
-                    "http://GESTIONUSUARIO/usuarios/alumnos/id/" + ca.getAlumnoId(), UsuarioDTO.class);
-                if (usuario != null) {
-                    alumnos.add(AlumnoDetalleDTO.desde(ca.getAlumnoId(), usuario));
+            if (auth != null) {
+                List<CursoAlumno> relaciones = cursoAlumnoRepository.findByCursoId(c.getId());
+                List<AlumnoDetalleDTO> alumnos = new ArrayList<>();
+                for (CursoAlumno ca : relaciones) {
+                    try {
+                        HttpHeaders headers = new HttpHeaders();
+                        headers.set("Authorization", auth);
+                        UsuarioDTO usuario = restTemplate.exchange(
+                            "http://GESTIONUSUARIO/usuarios/alumnos/id/" + ca.getAlumnoId(),
+                            HttpMethod.GET, new HttpEntity<>(headers), UsuarioDTO.class).getBody();
+                        if (usuario != null) {
+                            alumnos.add(AlumnoDetalleDTO.desde(ca.getAlumnoId(), usuario));
+                        }
+                    } catch (Exception e) { /* servicio no disponible */ }
                 }
+                dto.setAlumnos(alumnos);
             }
-            dto.setAlumnos(alumnos);
             lista.add(dto);
         }
         return lista;
     }
 
-    public CursoDTO buscarPorId(Long id) {
+    public CursoDTO buscarPorId(Long id, String auth) {
         Curso encontrado = cursoRepository.findById(id).orElse(null);
         if (encontrado == null) return null;
-        return CursoDTO.desde(encontrado);
+        CursoDTO dto = CursoDTO.desde(encontrado);
+        if (auth != null) {
+            if (encontrado.getProfesorJefeId() != null) {
+                try {
+                    HttpHeaders headers = new HttpHeaders();
+                    headers.set("Authorization", auth);
+                    ProfesorDTO profesor = restTemplate.exchange(
+                        "http://GESTIONUSUARIO/usuarios/profesores/" + encontrado.getProfesorJefeId(),
+                        HttpMethod.GET, new HttpEntity<>(headers), ProfesorDTO.class).getBody();
+                    if (profesor != null) {
+                        dto.setNombreProfesorJefe(profesor.getNombre() + " " + profesor.getApellido());
+                    }
+                } catch (Exception e) { /* servicio no disponible */ }
+            }
+            List<CursoAlumno> relaciones = cursoAlumnoRepository.findByCursoId(id);
+            List<AlumnoDetalleDTO> alumnos = new ArrayList<>();
+            for (CursoAlumno ca : relaciones) {
+                try {
+                    HttpHeaders headers = new HttpHeaders();
+                    headers.set("Authorization", auth);
+                    UsuarioDTO usuario = restTemplate.exchange(
+                        "http://GESTIONUSUARIO/usuarios/alumnos/id/" + ca.getAlumnoId(),
+                        HttpMethod.GET, new HttpEntity<>(headers), UsuarioDTO.class).getBody();
+                    if (usuario != null) {
+                        alumnos.add(AlumnoDetalleDTO.desde(ca.getAlumnoId(), usuario));
+                    }
+                } catch (Exception e) { /* servicio no disponible */ }
+            }
+            dto.setAlumnos(alumnos);
+        }
+        return dto;
     }
 
     @CircuitBreaker(name = "usuarioService", fallbackMethod = "fallbackAsignarAlumno")
-    public String asignarAlumno(AsignarAlumnoDTO dto) {
-        UsuarioDTO alumno = restTemplate.getForObject(
-            "http://GESTIONUSUARIO/usuarios/rut/" + dto.getAlumnoRut(), UsuarioDTO.class);
+    public String asignarAlumno(AsignarAlumnoDTO dto, String auth) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", auth);
+        UsuarioDTO alumno = restTemplate.exchange(
+            "http://GESTIONUSUARIO/usuarios/rut/" + dto.getAlumnoRut(),
+            HttpMethod.GET, new HttpEntity<>(headers), UsuarioDTO.class).getBody();
         if (alumno == null) {
             return "Alumno no encontrado con RUT: " + dto.getAlumnoRut();
         }
@@ -88,12 +138,15 @@ public class CursoService {
     }
 
     @CircuitBreaker(name = "usuarioService", fallbackMethod = "fallbackAsignarProfesor")
-    public String asignarProfesorJefe(Long cursoId, AsignarProfesorJefeDTO dto) {
+    public String asignarProfesorJefe(Long cursoId, AsignarProfesorJefeDTO dto, String auth) {
         if (!cursoRepository.existsById(cursoId)) {
             return "Curso no encontrado con ID: " + cursoId;
         }
-        UsuarioDTO profesor = restTemplate.getForObject(
-            "http://GESTIONUSUARIO/usuarios/rut/" + dto.getProfesorJefeRut(), UsuarioDTO.class);
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", auth);
+        UsuarioDTO profesor = restTemplate.exchange(
+            "http://GESTIONUSUARIO/usuarios/rut/" + dto.getProfesorJefeRut(),
+            HttpMethod.GET, new HttpEntity<>(headers), UsuarioDTO.class).getBody();
         if (profesor == null) {
             return "Profesor no encontrado con RUT: " + dto.getProfesorJefeRut();
         }
@@ -106,15 +159,41 @@ public class CursoService {
         return "Profesor jefe asignado exitosamente al curso.";
     }
 
+    public List<AlumnoDetalleDTO> obtenerAlumnosDeCurso(Long cursoId, String auth) {
+        List<AlumnoDetalleDTO> alumnos = new ArrayList<>();
+        if (auth == null) return alumnos;
+        List<CursoAlumno> relaciones = cursoAlumnoRepository.findByCursoId(cursoId);
+        for (CursoAlumno ca : relaciones) {
+            try {
+                HttpHeaders headers = new HttpHeaders();
+                headers.set("Authorization", auth);
+                UsuarioDTO usuario = restTemplate.exchange(
+                    "http://GESTIONUSUARIO/usuarios/alumnos/id/" + ca.getAlumnoId(),
+                    HttpMethod.GET, new HttpEntity<>(headers), UsuarioDTO.class).getBody();
+                if (usuario != null) {
+                    alumnos.add(AlumnoDetalleDTO.desde(ca.getAlumnoId(), usuario));
+                }
+            } catch (Exception e) { /* servicio no disponible */ }
+        }
+        return alumnos;
+    }
+
+    public List<CursoDTO> obtenerCursosPorProfesor(Long profesorId) {
+        return cursoRepository.findByProfesorJefeId(profesorId)
+            .stream()
+            .map(CursoDTO::desde)
+            .collect(Collectors.toList());
+    }
+
     private String fallbackCrearCurso(CursoDTO dto, Throwable t) {
         return "El servicio de usuarios no está disponible. Intente nuevamente más tarde.";
     }
 
-    private String fallbackAsignarAlumno(AsignarAlumnoDTO dto, Throwable t) {
+    private String fallbackAsignarAlumno(AsignarAlumnoDTO dto, String auth, Throwable t) {
         return "El servicio de usuarios no está disponible. Intente nuevamente más tarde.";
     }
 
-    private String fallbackAsignarProfesor(Long cursoId, AsignarProfesorJefeDTO dto, Throwable t) {
+    private String fallbackAsignarProfesor(Long cursoId, AsignarProfesorJefeDTO dto, String auth, Throwable t) {
         return "El servicio de usuarios no está disponible. Intente nuevamente más tarde.";
     }
 }

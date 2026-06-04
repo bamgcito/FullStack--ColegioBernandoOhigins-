@@ -8,6 +8,9 @@ import com.pablo.GESTIONASISTENCIA.model.Asistencia;
 import com.pablo.GESTIONASISTENCIA.repository.AsistenciaRepository;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -20,8 +23,8 @@ public class AsistenciaService {
     @Autowired private AsistenciaRepository asistenciaRepository;
     @Autowired private RestTemplate restTemplate;
 
-    public String registrarAsistencia(AsistenciaDTO dto) {
-        UsuarioDTO alumno = obtenerUsuarioPorRut(dto.getRutAlumno());
+    public String registrarAsistencia(AsistenciaDTO dto, String auth) {
+        UsuarioDTO alumno = obtenerUsuarioPorRut(dto.getRutAlumno(), auth);
         if (alumno == null) {
             return "No existe un usuario con RUT: " + dto.getRutAlumno();
         }
@@ -41,9 +44,8 @@ public class AsistenciaService {
         return "Asistencia registrada exitosamente.";
     }
 
-    // Devuelve asistencia enriquecida con nombreAsignatura — el front la usa para agrupar
-    public Object obtenerAsistenciaPorAlumno(String rutAlumno) {
-        UsuarioDTO alumno = obtenerUsuarioPorRut(rutAlumno);
+    public Object obtenerAsistenciaPorAlumno(String rutAlumno, String auth) {
+        UsuarioDTO alumno = obtenerUsuarioPorRut(rutAlumno, auth);
         if (alumno == null) {
             return "No existe un usuario con RUT: " + rutAlumno;
         }
@@ -51,7 +53,6 @@ public class AsistenciaService {
         List<AsistenciaDTO> resultado = new ArrayList<>();
         for (Asistencia asistencia : registros) {
             AsistenciaDTO asistenciaDTO = AsistenciaDTO.desde(asistencia);
-            // Obtener nombre de asignatura desde GESTIONACADEMICO
             AsignacionDocenteDTO asignacion = obtenerAsignacion(asistencia.getAsignacionDocenteId());
             if (asignacion != null && asignacion.getNombreAsignatura() != null) {
                 asistenciaDTO.setNombreAsignatura(asignacion.getNombreAsignatura());
@@ -61,8 +62,8 @@ public class AsistenciaService {
         return resultado;
     }
 
-    public Object calcularPorcentaje(String rutAlumno) {
-        UsuarioDTO alumno = obtenerUsuarioPorRut(rutAlumno);
+    public Object calcularPorcentaje(String rutAlumno, String auth) {
+        UsuarioDTO alumno = obtenerUsuarioPorRut(rutAlumno, auth);
         if (alumno == null) {
             return "No existe un usuario con RUT: " + rutAlumno;
         }
@@ -99,8 +100,12 @@ public class AsistenciaService {
     }
 
     @CircuitBreaker(name = "usuarioService", fallbackMethod = "fallbackUsuarioPorRut")
-    UsuarioDTO obtenerUsuarioPorRut(String rut) {
-        return restTemplate.getForObject("http://GESTIONUSUARIO/usuarios/rut/" + rut, UsuarioDTO.class);
+    UsuarioDTO obtenerUsuarioPorRut(String rut, String auth) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", auth);
+        return restTemplate.exchange(
+            "http://GESTIONUSUARIO/usuarios/rut/" + rut,
+            HttpMethod.GET, new HttpEntity<>(headers), UsuarioDTO.class).getBody();
     }
 
     @CircuitBreaker(name = "academicoService", fallbackMethod = "fallbackAcademico")
@@ -108,6 +113,6 @@ public class AsistenciaService {
         return restTemplate.getForObject("http://GESTIONACADEMICO/asignaciones/" + id, AsignacionDocenteDTO.class);
     }
 
-    UsuarioDTO fallbackUsuarioPorRut(String rut, Throwable t) { return null; }
+    UsuarioDTO fallbackUsuarioPorRut(String rut, String auth, Throwable t) { return null; }
     AsignacionDocenteDTO fallbackAcademico(Long id, Throwable t) { return null; }
 }

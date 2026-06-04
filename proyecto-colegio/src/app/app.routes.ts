@@ -30,6 +30,7 @@ export const routes: Routes = [
   { path: 'profesor/dashboard',    canActivate: [guard(['PROFESOR'])], loadComponent: () => import('./features/profesor/dashboard/profesor-dashboard.page').then(m => m.ProfesorDashboardPage) },
   { path: 'profesor/mis-cursos',   canActivate: [guard(['PROFESOR'])], loadComponent: () => import('./features/profesor/mis-cursos/profesor-mis-cursos.page').then(m => m.ProfesorMisCursosPage) },
   { path: 'profesor/asistencia',   canActivate: [guard(['PROFESOR'])], loadComponent: () => import('./features/profesor/asistencia/profesor-asistencia.page').then(m => m.ProfesorAsistenciaPage) },
+  { path: 'profesor/evaluaciones',  canActivate: [guard(['PROFESOR'])], loadComponent: () => import('./features/profesor/evaluaciones/profesor-evaluaciones.page').then(m => m.ProfesorEvaluacionesPage) },
   { path: 'profesor/notas',        canActivate: [guard(['PROFESOR'])], loadComponent: () => import('./features/profesor/notas/profesor-notas.page').then(m => m.ProfesorNotasPage) },
   { path: 'profesor/anotaciones',  canActivate: [guard(['PROFESOR'])], loadComponent: () => import('./features/profesor/anotaciones/profesor-anotaciones.page').then(m => m.ProfesorAnotacionesPage) },
   { path: 'profesor/comunicaciones', canActivate: [guard(['PROFESOR'])], loadComponent: () => import('./features/shared-pages/comunicaciones/comunicaciones.page').then(m => m.ComunicacionesPage) },

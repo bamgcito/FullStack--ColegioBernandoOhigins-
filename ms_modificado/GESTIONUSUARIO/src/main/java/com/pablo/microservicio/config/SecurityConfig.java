@@ -30,7 +30,6 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/usuarios/login", "/usuarios/bootstrap", "/roles/**").permitAll()
-                .requestMatchers(org.springframework.http.HttpMethod.GET, "/usuarios/**").permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

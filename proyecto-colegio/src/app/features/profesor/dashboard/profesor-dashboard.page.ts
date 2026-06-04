@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { IonContent, IonIcon } from '@ionic/angular/standalone';
@@ -14,13 +14,11 @@ import { forkJoin } from 'rxjs';
   standalone: true,
   imports: [CommonModule, RouterLink, IonContent, IonIcon, LayoutComponent],
   templateUrl: './profesor-dashboard.page.html',
-  styleUrls: ['./profesor-dashboard.page.scss'],
-  host: { class: 'ion-page' }
+  styleUrls: ['./profesor-dashboard.page.scss']
 })
 export class ProfesorDashboardPage implements OnInit {
   asignaciones: any[] = [];
   anotaciones: any[] = [];
-  usuarios: any[] = [];
 
   constructor(private auth: AuthService, private api: ApiService) {
     addIcons({ clipboardOutline, pencilOutline });
@@ -30,13 +28,16 @@ export class ProfesorDashboardPage implements OnInit {
 
   cargar() {
     const uid = this.auth.currentUser?.id ?? 0;
-    forkJoin({ cursos: this.api.getCursos(), usuarios: this.api.getUsuarios() }).subscribe({
-      next: ({ cursos, usuarios }) => {
-        this.usuarios = usuarios;
+    forkJoin({ cursos: this.api.getCursos(), asignaturas: this.api.getAsignaturas() }).subscribe({
+      next: ({ cursos, asignaturas }) => {
         if (!cursos.length) return;
         forkJoin(cursos.map((c: any) => this.api.getAsignacionesPorCurso(c.id))).subscribe({
           next: (res: any[]) => {
-            this.asignaciones = res.flat().filter((a: any) => a.profesorId === uid);
+            this.asignaciones = res.flat().filter((a: any) => a.profesorId === uid).map((a: any) => {
+              const c = cursos.find((c: any) => c.id === a.cursoId);
+              const s = asignaturas.find((s: any) => s.id === a.asignaturaId);
+              return { ...a, asignatura: s?.nombre || 'â€”', cursoNombre: c ? `${c.nivel}${c.letra}` : 'â€”' };
+            });
             if (!this.asignaciones.length) return;
             forkJoin(this.asignaciones.map((a: any) => this.api.getAnotacionesPorAsignacion(a.id))).subscribe({
               next: (aRes: any[]) => { this.anotaciones = aRes.flat().slice(0, 4); }
@@ -45,11 +46,6 @@ export class ProfesorDashboardPage implements OnInit {
         });
       }
     });
-  }
-
-  getAlumno(id: number) {
-    const a = this.usuarios.find(u => u.id === id);
-    return a ? `${a.nombre} ${a.apellido}` : `Alumno ${id}`;
   }
 
   badge(t: string) {

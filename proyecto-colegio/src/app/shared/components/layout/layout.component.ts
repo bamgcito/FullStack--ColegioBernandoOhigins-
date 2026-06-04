@@ -1,6 +1,6 @@
 import { Component, Input, OnInit, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -13,7 +13,7 @@ import { AuthService, AuthUser } from '../../../core/services/auth.service';
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, IonIcon],
+  imports: [CommonModule, IonIcon],
   templateUrl: './layout.component.html',
   styleUrls: ['./layout.component.scss']
 })
@@ -36,7 +36,9 @@ export class LayoutComponent implements OnInit {
 
   get initials(): string {
     if (!this.currentUser) return '?';
-    return `${this.currentUser.nombre[0]}${this.currentUser.apellido[0]}`.toUpperCase();
+    const n = this.currentUser.nombre?.[0] || '?';
+    const a = this.currentUser.apellido?.[0] || '';
+    return `${n}${a}`.toUpperCase();
   }
   get rolLabel(): string {
     const labels: Record<string, string> = {
@@ -53,11 +55,13 @@ export class LayoutComponent implements OnInit {
 
   ngOnInit() { this.currentUser = this.auth.currentUser; }
 
+  isActive(ruta: string): boolean {
+    return this.router.url === ruta || this.router.url.startsWith(ruta + '/');
+  }
+
   navegarA(ruta: string): void {
     this.closeSidebar();
-    this.ngZone.run(() => {
-      this.router.navigate([ruta], { replaceUrl: true });
-    });
+    this.router.navigate([ruta]);
   }
 
   logout() { this.ngZone.run(() => this.auth.logout()); }

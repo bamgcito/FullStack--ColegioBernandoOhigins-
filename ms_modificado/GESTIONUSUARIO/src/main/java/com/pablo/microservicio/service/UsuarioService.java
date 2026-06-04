@@ -6,10 +6,14 @@ import com.pablo.microservicio.repository.*;
 import com.pablo.microservicio.security.JwtUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class UsuarioService {
@@ -23,20 +27,19 @@ public class UsuarioService {
     @Autowired private PasswordEncoder passwordEncoder;
     @Autowired private JwtUtil jwtUtil;
 
-    public Object login(LoginDTO solicitud) {
+    public ResponseEntity<Object> login(LoginDTO solicitud) {
         Usuario encontrado = usuarioRepository.findByRut(solicitud.getRut()).orElse(null);
         if (encontrado == null) {
-            return "Usuario no encontrado con RUT: " + solicitud.getRut();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("error", "Usuario no encontrado con RUT: " + solicitud.getRut()));
         }
         if (!passwordEncoder.matches(solicitud.getContrasena(), encontrado.getContrasena())) {
-            return "Contraseña incorrecta.";
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("error", "Contraseña incorrecta."));
         }
 
         String token = jwtUtil.generarToken(encontrado.getRut(), encontrado.getRol().getNombre(), encontrado.getId());
-
-        // Buscar nombre y apellido según el rol del usuario
-        String nombre = "";
-        String apellido = "";
+        String nombre = "", apellido = "";
         String rol = encontrado.getRol().getNombre();
 
         if (rol.equals("ALUMNO")) {
@@ -53,7 +56,7 @@ public class UsuarioService {
             apellido = "";
         }
 
-        return LoginDTO.desde(encontrado, token, nombre, apellido);
+        return ResponseEntity.ok(LoginDTO.desde(encontrado, token, nombre, apellido));
     }
 
     public String crearUsuario(UsuarioDTO solicitud) {
@@ -70,6 +73,39 @@ public class UsuarioService {
         usuario.setRol(rol);
         usuarioRepository.save(usuario);
         return "Usuario creado exitosamente con RUT: " + solicitud.getRut() + " y rol: " + rol.getNombre();
+    }
+
+    public ResponseEntity<String> eliminarUsuario(Long id) {
+        if (!usuarioRepository.existsById(id)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body("No existe usuario con ID: " + id);
+        }
+        alumnoRepository.findByUsuarioId(id).ifPresent(al -> {
+            alumnoApoderadoRepository.findByAlumnoId(al.getId())
+                .forEach(rel -> alumnoApoderadoRepository.deleteById(rel.getId()));
+            alumnoRepository.deleteById(al.getId());
+        });
+        profesorRepository.findByUsuarioId(id).ifPresent(p -> profesorRepository.deleteById(p.getId()));
+        apoderadoRepository.findByUsuarioId(id).ifPresent(ap -> {
+            alumnoApoderadoRepository.findByApoderadoId(ap.getId())
+                .forEach(rel -> alumnoApoderadoRepository.deleteById(rel.getId()));
+            apoderadoRepository.deleteById(ap.getId());
+        });
+        usuarioRepository.deleteById(id);
+        return ResponseEntity.ok("Usuario eliminado correctamente.");
+    }
+
+    public ResponseEntity<Object> obtenerAlumnosDeApoderado(Long apoderadoUsuarioId) {
+        Apoderado apoderado = apoderadoRepository.findByUsuarioId(apoderadoUsuarioId).orElse(null);
+        if (apoderado == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", "El usuario con ID " + apoderadoUsuarioId + " no tiene perfil de apoderado."));
+        }
+        List<AlumnoDTO> alumnos = alumnoApoderadoRepository.findByApoderadoId(apoderado.getId())
+            .stream()
+            .map(rel -> AlumnoDTO.desde(rel.getAlumno()))
+            .collect(Collectors.toList());
+        return ResponseEntity.ok(alumnos);
     }
 
     public UsuarioDTO buscarPorId(Long id) {
@@ -191,69 +227,4 @@ public class UsuarioService {
         return alumnoApoderadoRepository.existsByAlumnoIdAndApoderadoId(alumno.getId(), apoderado.getId());
     }
 
-    public String bootstrap() {
-        // Crear roles si no existen
-        Rol adminRol = rolRepository.findById(1L).orElse(null);
-        if (adminRol == null) {
-            adminRol = new Rol();
-            adminRol.setNombre("ADMIN");
-            rolRepository.save(adminRol);
-        }
-
-        Rol profesorRol = rolRepository.findById(2L).orElse(null);
-        if (profesorRol == null) {
-            profesorRol = new Rol();
-            profesorRol.setNombre("PROFESOR");
-            rolRepository.save(profesorRol);
-        }
-
-        Rol alumnoRol = rolRepository.findById(3L).orElse(null);
-        if (alumnoRol == null) {
-            alumnoRol = new Rol();
-            alumnoRol.setNombre("ALUMNO");
-            rolRepository.save(alumnoRol);
-        }
-
-        Rol apoderadoRol = rolRepository.findById(4L).orElse(null);
-        if (apoderadoRol == null) {
-            apoderadoRol = new Rol();
-            apoderadoRol.setNombre("APODERADO");
-            rolRepository.save(apoderadoRol);
-        }
-
-        // Crear usuarios de prueba
-        if (!usuarioRepository.existsByRut("12345678-9")) {
-            Usuario admin = new Usuario();
-            admin.setRut("12345678-9");
-            admin.setContrasena(passwordEncoder.encode("admin123"));
-            admin.setRol(adminRol);
-            usuarioRepository.save(admin);
-        }
-
-        if (!usuarioRepository.existsByRut("15234567-8")) {
-            Usuario profesor = new Usuario();
-            profesor.setRut("15234567-8");
-            profesor.setContrasena(passwordEncoder.encode("profe123"));
-            profesor.setRol(profesorRol);
-            usuarioRepository.save(profesor);
-        }
-
-        if (!usuarioRepository.existsByRut("20111222-3")) {
-            Usuario alumno = new Usuario();
-            alumno.setRut("20111222-3");
-            alumno.setContrasena(passwordEncoder.encode("alumno123"));
-            alumno.setRol(alumnoRol);
-            usuarioRepository.save(alumno);
-        }
-
-        if (!usuarioRepository.existsByRut("30111222-K")) {
-            Usuario apoderado = new Usuario();
-            apoderado.setRut("30111222-K");
-            apoderado.setContrasena(passwordEncoder.encode("apod123"));
-            apoderado.setRol(apoderadoRol);
-            usuarioRepository.save(apoderado);
-        }
-
-        return "Bootstrap completado. Usuarios de prueba creados.";
-    }
 }

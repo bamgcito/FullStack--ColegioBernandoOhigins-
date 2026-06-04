@@ -1,0 +1,155 @@
+networks:
+  colegio-net:
+    driver: bridge
+
+volumes:
+  mysql_data:
+
+services:
+
+  # ── BASE DE DATOS ────────────────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "123456789."
+      MYSQL_ROOT_HOST: "%"
+    volumes:
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    networks:
+      - colegio-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p123456789."]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  # ── EUREKA SERVER ────────────────────────────────────────────────────
+  eureka-server:
+    build:
+      context: ./eureka-server
+    container_name: eureka-server
+    ports:
+      - "8090:8090"
+    networks:
+      - colegio-net
+    restart: unless-stopped
+
+  # ── MICROSERVICIOS ───────────────────────────────────────────────────
+  gestionusuario:
+    build:
+      context: ./ms_modificado/GESTIONUSUARIO
+    container_name: gestionusuario
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    networks:
+      - colegio-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    restart: unless-stopped
+
+  gestioncurso:
+    build:
+      context: ./ms_modificado/GESTIONCURSO
+    container_name: gestioncurso
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    networks:
+      - colegio-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    restart: unless-stopped
+
+  gestionacademico:
+    build:
+      context: ./ms_modificado/GESTIONACADEMICO
+    container_name: gestionacademico
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    networks:
+      - colegio-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    restart: unless-stopped
+
+  gestionasistencia:
+    build:
+      context: ./ms_modificado/GESTIONASISTENCIA
+    container_name: gestionasistencia
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    networks:
+      - colegio-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    restart: unless-stopped
+
+  # ── BFF ──────────────────────────────────────────────────────────────
+  bff:
+    build:
+      context: ./BFF_original/BFF
+    container_name: bff
+    ports:
+      - "8085:8085"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    networks:
+      - colegio-net
+    depends_on:
+      eureka-server:
+        condition: service_started
+    restart: unless-stopped
+
+  # ── API GATEWAY ──────────────────────────────────────────────────────
+  apigateway:
+    build:
+      context: ./apigateway
+    container_name: apigateway
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    networks:
+      - colegio-net
+    depends_on:
+      bff:
+        condition: service_started
+    restart: unless-stopped
+
+  # ── FRONTEND ─────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./proyecto-colegio
+    container_name: frontend
+    ports:
+      - "8100:80"
+    networks:
+      - colegio-net
+    depends_on:
+      - apigateway
+    restart: unless-stopped

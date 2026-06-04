@@ -1,8 +1,9 @@
 <app-layout pageTitle="Gestión de Cursos">
   <div class="animate-in">
+    <div *ngIf="exitoMsg" style="background:#f0fff4;border:1px solid #c6f6d5;color:#2F855A;padding:10px 16px;border-radius:8px;margin-bottom:16px;font-weight:600;font-size:13px">{{ exitoMsg }}</div>
     <div class="page-actions">
       <div></div>
-      <button class="btn-primary" (click)="showModal=true">
+      <button class="btn-primary" (click)="abrirModal()">
         <ion-icon name="add-outline"></ion-icon> Nuevo Curso
       </button>
     </div>
@@ -18,17 +19,31 @@
             <th>Año</th>
             <th>Profesor Jefe</th>
             <th>Alumnos</th>
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let c of cursos">
             <td><strong>{{ c.nivel }}{{ c.letra }}</strong></td>
             <td>{{ c.anio }}</td>
-            <td>{{ getProfesor(c.profesorJefeId) }}</td>
-            <td><span class="badge badge-info">{{ c.alumnosIds?.length || 0 }}</span></td>
+            <td>{{ c.nombreProfesorJefe || 'Sin asignar' }}</td>
+            <td>
+              <span class="badge badge-info" style="cursor:pointer" title="Ver lista" (click)="abrirListaAlumnos(c)">
+                {{ c.alumnos?.length || 0 }}
+              </span>
+            </td>
+            <td style="white-space:nowrap">
+              <button class="btn-secondary" style="font-size:12px;padding:4px 10px;margin-right:6px" (click)="abrirModalProfesor(c)">
+                <ion-icon name="person-outline"></ion-icon> Profesor jefe
+              </button>
+              <button class="btn-secondary" style="font-size:12px;padding:4px 10px" (click)="abrirModalAlumno(c)">
+                <ion-icon name="school-outline"></ion-icon> Asignar alumno
+              </button>
+            </td>
           </tr>
           <tr *ngIf="cursos.length === 0">
-            <td colspan="4" style="text-align:center;padding:32px;color:#718096">
+            <td colspan="5" style="text-align:center;padding:32px;color:#718096">
+
               {{ loading ? 'Cargando...' : 'No hay cursos' }}
             </td>
           </tr>
@@ -38,21 +53,92 @@
   </div>
 </app-layout>
 
+<!-- Modal: Nuevo Curso -->
 <div class="modal-overlay" *ngIf="showModal" (click)="showModal=false">
   <div class="modal-box" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <span class="content-card-title">Nuevo Curso</span>
       <button class="btn-icon" (click)="showModal=false"><ion-icon name="close-outline"></ion-icon></button>
     </div>
-    <div class="form-group"><label class="form-label">Nivel</label><input class="form-input" [(ngModel)]="nuevo.nivel"
-        placeholder="1°" /></div>
-    <div class="form-group"><label class="form-label">Letra</label><input class="form-input" [(ngModel)]="nuevo.letra"
-        placeholder="A" /></div>
-    <div class="form-group"><label class="form-label">Año</label><input class="form-input" type="number"
-        [(ngModel)]="nuevo.anio" /></div>
+    <div class="form-group"><label class="form-label">Nivel</label><input class="form-input" [(ngModel)]="nuevo.nivel" placeholder="1°" /></div>
+    <div class="form-group"><label class="form-label">Letra</label><input class="form-input" [(ngModel)]="nuevo.letra" placeholder="A" /></div>
+    <div class="form-group"><label class="form-label">Año</label><input class="form-input" type="number" [(ngModel)]="nuevo.anio" /></div>
+    <div *ngIf="errorMsg" style="color:#C53030;font-size:12px;margin-bottom:8px;font-weight:600">{{ errorMsg }}</div>
     <div style="display:flex;gap:10px;margin-top:16px">
       <button class="btn-secondary" style="flex:1" (click)="showModal=false">Cancelar</button>
       <button class="btn-primary" style="flex:1;justify-content:center" (click)="crear()">Crear</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Asignar Profesor Jefe -->
+<div class="modal-overlay" *ngIf="showModalProfesor" (click)="showModalProfesor=false">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <span class="content-card-title">Asignar Profesor Jefe</span>
+      <button class="btn-icon" (click)="showModalProfesor=false"><ion-icon name="close-outline"></ion-icon></button>
+    </div>
+    <div style="background:#EBF8FF;border:1px solid #BEE3F8;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:13px;color:#2B6CB0">
+      Curso: <strong>{{ cursoSel?.nivel }}{{ cursoSel?.letra }}</strong> &nbsp;|&nbsp; Año: <strong>{{ cursoSel?.anio }}</strong>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Profesor *</label>
+      <select class="form-select" [(ngModel)]="profesorJefeRutSel">
+        <option value="">— Seleccionar profesor —</option>
+        <option *ngFor="let p of profesores" [value]="p.rut">{{ p.nombre }} {{ p.apellido }}</option>
+      </select>
+    </div>
+    <div *ngIf="errorMsgProfesor" style="color:#C53030;font-size:12px;margin-bottom:8px;font-weight:600">{{ errorMsgProfesor }}</div>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn-secondary" style="flex:1" (click)="showModalProfesor=false">Cancelar</button>
+      <button class="btn-primary" style="flex:1;justify-content:center" (click)="asignarProfesorJefe()" [disabled]="!profesorJefeRutSel">Asignar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Lista de Alumnos del Curso -->
+<div class="modal-overlay" *ngIf="showModalListaAlumnos" (click)="showModalListaAlumnos=false">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <span class="content-card-title">Alumnos — {{ cursoSel?.nivel }}{{ cursoSel?.letra }}</span>
+      <button class="btn-icon" (click)="showModalListaAlumnos=false"><ion-icon name="close-outline"></ion-icon></button>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Nombre</th><th>RUT</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let a of listaAlumnosSel">
+          <td>{{ a.nombre }} {{ a.apellido }}</td>
+          <td style="font-family:monospace;font-size:12px;color:#718096">{{ a.rut }}</td>
+        </tr>
+        <tr *ngIf="!listaAlumnosSel.length">
+          <td colspan="2" style="text-align:center;padding:24px;color:#718096">Sin alumnos asignados</td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="margin-top:16px;text-align:right">
+      <button class="btn-secondary" (click)="showModalListaAlumnos=false">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Asignar Alumno a Curso -->
+<div class="modal-overlay" *ngIf="showModalAlumno" (click)="showModalAlumno=false">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <span class="content-card-title">Asignar Alumno al Curso</span>
+      <button class="btn-icon" (click)="showModalAlumno=false"><ion-icon name="close-outline"></ion-icon></button>
+    </div>
+    <div style="background:#EBF8FF;border:1px solid #BEE3F8;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:13px;color:#2B6CB0">
+      Curso: <strong>{{ cursoSel?.nivel }}{{ cursoSel?.letra }}</strong> &nbsp;|&nbsp; Año: <strong>{{ cursoSel?.anio }}</strong>
+    </div>
+    <div class="form-group">
+      <label class="form-label">RUT del Alumno *</label>
+      <input class="form-input" [(ngModel)]="rutAlumnoInput" placeholder="Ej: 12345678-9" style="text-transform:uppercase" />
+    </div>
+    <div *ngIf="errorMsgAlumno" style="color:#C53030;font-size:12px;margin-bottom:8px;font-weight:600">{{ errorMsgAlumno }}</div>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn-secondary" style="flex:1" (click)="showModalAlumno=false">Cancelar</button>
+      <button class="btn-primary" style="flex:1;justify-content:center" (click)="asignarAlumno()" [disabled]="!rutAlumnoInput.trim()">Asignar</button>
     </div>
   </div>
 </div>

@@ -1,4 +1,4 @@
-import { Component, NgZone } from '@angular/core';
+﻿import { Component, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -16,8 +16,7 @@ import { AuthService } from '../../core/services/auth.service';
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink, IonContent, IonIcon],
   templateUrl: './login.page.html',
-  styleUrls: ['./login.page.scss'],
-  host: { class: 'ion-page' }
+  styleUrls: ['./login.page.scss']
 })
 export class LoginPage {
   rut = '';
@@ -37,11 +36,11 @@ export class LoginPage {
   login(): void {
     this.errorMsg = '';
     if (!this.rut || !this.password) {
-      this.errorMsg = 'Por favor ingresa tu RUT y contraseña.';
+      this.errorMsg = 'Por favor ingresa tu RUT y contraseÃ±a.';
       return;
     }
     this.loading = true;
-    this.authService.login(this.rut.trim(), this.password).subscribe(result => {
+    this.authService.login(this.rut.trim().toUpperCase(), this.password).subscribe(result => {
       this.loading = false;
       if (result.success) {
         this.ngZone.run(() => this.authService.redirectByRole());

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonContent, IonIcon } from '@ionic/angular/standalone';
@@ -12,8 +12,7 @@ import { ApiService } from '../../../core/services/api.service';
   standalone: true,
   imports: [CommonModule, FormsModule, IonContent, IonIcon, LayoutComponent],
   templateUrl: './admin-asignaturas.page.html',
-  styleUrls: ['./admin-asignaturas.page.scss'],
-  host: { class: 'ion-page' }
+  styleUrls: ['./admin-asignaturas.page.scss']
 })
 export class AdminAsignaturasPage implements OnInit {
   asignaturas: any[] = [];

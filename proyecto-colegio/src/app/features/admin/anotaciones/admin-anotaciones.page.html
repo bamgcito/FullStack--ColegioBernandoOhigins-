@@ -1,9 +1,75 @@
 <app-layout pageTitle="Anotaciones">
   <div class="animate-in">
+    <div *ngIf="exitoMsg" style="background:#f0fff4;border:1px solid #c6f6d5;color:#2F855A;padding:10px 16px;border-radius:8px;margin-bottom:16px;font-weight:600;font-size:13px">{{ exitoMsg }}</div>
+    <div class="page-actions"><div></div>
+      <button class="btn-primary" (click)="abrirModal()" [disabled]="!asignacionId">
+        <ion-icon name="add-outline"></ion-icon> Nueva Anotación
+      </button>
+    </div>
+
+    <div class="content-card" style="margin-bottom:16px">
+      <div class="content-card-header"><span class="content-card-title">Seleccionar Asignación</span></div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <div class="form-group" style="flex:1">
+          <label class="form-label">Curso</label>
+          <select class="form-select" [(ngModel)]="cursoId" (ngModelChange)="onCurso()">
+            <option [ngValue]="0">— Seleccionar —</option>
+            <option *ngFor="let c of cursos" [ngValue]="c.id">{{ c.nivel }}{{ c.letra }}</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex:1">
+          <label class="form-label">Asignación</label>
+          <select class="form-select" [(ngModel)]="asignacionId" (ngModelChange)="onAsignacion()" [disabled]="!asignaciones.length">
+            <option [ngValue]="0">— Seleccionar —</option>
+            <option *ngFor="let a of asignaciones" [ngValue]="a.id">{{ a.label }}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
     <div class="content-card">
       <div class="content-card-header"><span class="content-card-title">Anotaciones de Alumnos</span><span class="badge badge-info">{{ anotaciones.length }}</span></div>
       <table class="data-table"><thead><tr><th>Alumno</th><th>Tipo</th><th>Descripción</th><th>Fecha</th></tr></thead>
-      <tbody><tr *ngFor="let a of anotaciones"><td>{{ getAlumno(a.alumnoId) }}</td><td><span class="badge" [ngClass]="badge(a.tipo)">{{ a.tipo }}</span></td><td style="font-size:12px;max-width:220px">{{ a.descripcion }}</td><td style="font-size:12px;color:#718096">{{ a.fecha }}</td></tr></tbody></table>
+      <tbody>
+        <tr *ngIf="!anotaciones.length"><td colspan="4" style="text-align:center;padding:32px;color:#718096">Sin anotaciones para esta asignación</td></tr>
+        <tr *ngFor="let a of anotaciones">
+          <td>{{ getAlumno(a.rutAlumno) }}</td>
+          <td><span class="badge" [ngClass]="badge(a.tipo)">{{ a.tipo }}</span></td>
+          <td style="font-size:12px;max-width:220px">{{ a.descripcion }}</td>
+          <td style="font-size:12px;color:#718096">{{ a.fecha }}</td>
+        </tr>
+      </tbody></table>
     </div>
   </div>
 </app-layout>
+
+<div class="modal-overlay" *ngIf="showModal" (click)="showModal=false">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <span class="content-card-title">Nueva Anotación</span>
+      <button class="btn-icon" (click)="showModal=false"><ion-icon name="close-outline"></ion-icon></button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Alumno *</label>
+      <select class="form-select" [(ngModel)]="nueva.rutAlumno">
+        <option value="">— Seleccionar —</option>
+        <option *ngFor="let al of alumnos" [value]="al.rut">{{ al.nombre }} {{ al.apellido }}</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Tipo *</label>
+      <select class="form-select" [(ngModel)]="nueva.tipo">
+        <option value="POSITIVA">POSITIVA</option>
+        <option value="NEGATIVA">NEGATIVA</option>
+        <option value="NEUTRA">NEUTRA</option>
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">Fecha</label><input class="form-input" type="date" [(ngModel)]="nueva.fecha"></div>
+    <div class="form-group"><label class="form-label">Descripción *</label><input class="form-input" [(ngModel)]="nueva.descripcion" placeholder="Descripción de la anotación..."></div>
+    <div *ngIf="errorMsg" style="color:#C53030;font-size:12px;margin-bottom:8px;font-weight:600">{{ errorMsg }}</div>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn-secondary" style="flex:1" (click)="showModal=false">Cancelar</button>
+      <button class="btn-primary" style="flex:1;justify-content:center" (click)="crear()" [disabled]="!nueva.rutAlumno || !nueva.descripcion">Crear</button>
+    </div>
+  </div>
+</div>

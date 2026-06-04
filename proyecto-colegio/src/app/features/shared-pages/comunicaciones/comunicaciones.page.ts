@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonContent, IonIcon } from '@ionic/angular/standalone';
@@ -13,8 +13,7 @@ import * as Mock from '../../../shared/mocks/mock-data';
   standalone: true,
   imports: [CommonModule, FormsModule, IonContent, IonIcon, LayoutComponent],
   templateUrl: './comunicaciones.page.html',
-  styleUrls: ['./comunicaciones.page.scss'],
-  host: { class: 'ion-page' }
+  styleUrls: ['./comunicaciones.page.scss']
 })
 export class ComunicacionesPage implements OnInit {
   userId = 0;

@@ -14,61 +14,93 @@ import { forkJoin } from 'rxjs';
   standalone: true,
   imports: [CommonModule, FormsModule, IonContent, IonIcon, LayoutComponent],
   templateUrl: './profesor-anotaciones.page.html',
-  styleUrls: ['./profesor-anotaciones.page.scss'],
-  host: { class: 'ion-page' }
+  styleUrls: ['./profesor-anotaciones.page.scss']
 })
 export class ProfesorAnotacionesPage implements OnInit {
+  cursos: any[] = [];
+  cursoId = 0;
+  asignaturasList: any[] = [];
   asignaciones: any[] = [];
+  asignacionId = 0;
   anotaciones: any[] = [];
   alumnos: any[] = [];
+  alumnoNombres: Record<string, string> = {};
   showModal = false;
-  nueva = { rutAlumno: '', asignacionDocenteId: 0, tipo: 'POSITIVA', descripcion: '' };
+  errorMsg = '';
+  exitoMsg = '';
+  nueva = { rutAlumno: '', descripcion: '', tipo: 'POSITIVA', fecha: new Date().toISOString().split('T')[0] };
 
   constructor(private auth: AuthService, private api: ApiService) { addIcons({ addOutline, closeOutline }); }
-  ngOnInit() { this.cargar(); }
 
-  cargar() {
+  ngOnInit() {
     const uid = this.auth.currentUser?.id ?? 0;
     forkJoin({ cursos: this.api.getCursos(), asignaturas: this.api.getAsignaturas() }).subscribe({
       next: ({ cursos, asignaturas }) => {
+        this.asignaturasList = asignaturas;
         if (!cursos.length) return;
         forkJoin(cursos.map((c: any) => this.api.getAsignacionesPorCurso(c.id))).subscribe({
           next: (res: any[]) => {
-            this.asignaciones = res.flat().filter((a: any) => a.profesorId === uid).map((a: any) => {
-              const c = cursos.find((c: any) => c.id === a.cursoId);
-              const s = asignaturas.find((s: any) => s.id === a.asignaturaId);
-              return { ...a, label: `${s?.nombre || '—'} — ${c?.nivel || ''}${c?.letra || ''}` };
-            });
-            if (!this.asignaciones.length) return;
-            // Cargar alumnos de los cursos de este profesor
-            const cursoIds = [...new Set(this.asignaciones.map((a: any) => a.cursoId))];
-            const cursosDelProfe = cursos.filter((c: any) => cursoIds.includes(c.id));
-            const alumnoRuts: string[] = cursosDelProfe.flatMap((c: any) => c.alumnoRuts || c.alumnos || []);
-            this.alumnos = alumnoRuts; // si el backend devuelve ruts en el curso, sino se deja vacío
-
-            forkJoin(this.asignaciones.map((a: any) => this.api.getAnotacionesPorAsignacion(a.id))).subscribe({
-              next: (aRes: any[]) => { this.anotaciones = aRes.flat(); }
-            });
+            const misCursoIds = new Set(
+              res.flat().filter((a: any) => a.profesorId === uid).map((a: any) => a.cursoId)
+            );
+            this.cursos = cursos.filter((c: any) => misCursoIds.has(c.id));
           }
         });
       }
     });
   }
 
-  getAlumno(rut: string) {
-    const a = this.alumnos.find((al: any) => al.rut === rut || al === rut);
-    return a?.nombre ? `${a.nombre} ${a.apellido}` : rut;
+  onCurso() {
+    this.asignaciones = []; this.asignacionId = 0; this.anotaciones = []; this.alumnos = []; this.alumnoNombres = {};
+    if (!this.cursoId) return;
+    const uid = this.auth.currentUser?.id ?? 0;
+    forkJoin({
+      asignaciones: this.api.getAsignacionesPorCurso(+this.cursoId),
+      alumnos: this.api.getAlumnosDeCurso(+this.cursoId)
+    }).subscribe({
+      next: ({ asignaciones, alumnos }) => {
+        this.asignaciones = asignaciones
+          .filter((a: any) => a.profesorId === uid)
+          .map((a: any) => ({
+            ...a,
+            label: this.asignaturasList.find((s: any) => s.id === a.asignaturaId)?.nombre || `Asig. ${a.id}`
+          }));
+        this.alumnos = alumnos;
+        alumnos.forEach((al: any) => { this.alumnoNombres[al.rut] = `${al.nombre} ${al.apellido}`; });
+      }
+    });
   }
 
+  onAsignacion() {
+    this.anotaciones = [];
+    this.exitoMsg = '';
+    if (!this.asignacionId) return;
+    this.api.getAnotacionesPorAsignacion(+this.asignacionId).subscribe({
+      next: data => { this.anotaciones = data; }
+    });
+  }
+
+  getAlumno(rut: string) { return this.alumnoNombres[rut] || rut || '—'; }
   badge(t: string) { return { POSITIVA: 'badge-success', NEGATIVA: 'badge-danger', NEUTRA: 'badge-neutral' }[t] || 'badge-neutral'; }
 
+  abrirModal() {
+    this.errorMsg = '';
+    this.nueva = { rutAlumno: '', descripcion: '', tipo: 'POSITIVA', fecha: new Date().toISOString().split('T')[0] };
+    this.showModal = true;
+  }
+
   crear() {
-    if (!this.nueva.rutAlumno || !this.nueva.asignacionDocenteId || !this.nueva.descripcion) return;
-    this.api.registrarAnotacion(this.nueva).subscribe({
-      next: data => {
-        this.anotaciones.unshift(data);
+    if (!this.nueva.rutAlumno || !this.nueva.descripcion || !this.asignacionId) return;
+    this.errorMsg = '';
+    this.api.registrarAnotacion({ ...this.nueva, asignacionDocenteId: +this.asignacionId }).subscribe({
+      next: () => {
         this.showModal = false;
-        this.nueva = { rutAlumno: '', asignacionDocenteId: 0, tipo: 'POSITIVA', descripcion: '' };
+        this.nueva = { rutAlumno: '', descripcion: '', tipo: 'POSITIVA', fecha: new Date().toISOString().split('T')[0] };
+        this.exitoMsg = 'Anotación registrada correctamente';
+        this.onAsignacion();
+      },
+      error: () => {
+        this.errorMsg = 'Error al registrar la anotación';
       }
     });
   }

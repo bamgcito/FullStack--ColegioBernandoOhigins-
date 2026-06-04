@@ -14,8 +14,7 @@ import { forkJoin } from 'rxjs';
   standalone: true,
   imports: [CommonModule, FormsModule, IonContent, IonIcon, LayoutComponent],
   templateUrl: './profesor-asistencia.page.html',
-  styleUrls: ['./profesor-asistencia.page.scss'],
-  host: { class: 'ion-page' }
+  styleUrls: ['./profesor-asistencia.page.scss']
 })
 export class ProfesorAsistenciaPage implements OnInit {
   asignaciones: any[] = [];
@@ -24,6 +23,7 @@ export class ProfesorAsistenciaPage implements OnInit {
   registros: Record<number, string> = {};
   fecha = new Date().toISOString().split('T')[0];
   guardado = false;
+  errorMsg = '';
 
   constructor(private auth: AuthService, private api: ApiService) {
     addIcons({ checkmarkOutline, closeOutline, timeOutline, saveOutline });
@@ -47,12 +47,19 @@ export class ProfesorAsistenciaPage implements OnInit {
     });
   }
 
-  seleccionar(idx: number) { this.asignacionIdx = idx; this.onAsig(); }
+  seleccionar(idx: number) {
+    this.asignacionIdx = idx;
+    this.guardado = false;
+    this.errorMsg = '';
+    this.onAsig();
+  }
 
   onAsig() {
-    this.api.getUsuarios().subscribe({
-      next: usuarios => {
-        this.alumnos = usuarios.filter((u: any) => (u.nombreRol || u.rol) === 'ALUMNO');
+    const asig = this.asignaciones[this.asignacionIdx];
+    if (!asig?.cursoId) return;
+    this.api.getAlumnosDeCurso(asig.cursoId).subscribe({
+      next: alumnos => {
+        this.alumnos = alumnos;
         this.alumnos.forEach(al => { this.registros[al.id] = 'PRESENTE'; });
       }
     });
@@ -61,8 +68,17 @@ export class ProfesorAsistenciaPage implements OnInit {
   guardar() {
     const asig = this.asignaciones[this.asignacionIdx];
     if (!asig) return;
+    this.errorMsg = '';
     forkJoin(this.alumnos.map(al => this.api.registrarAsistencia({
-      alumnoRut: al.rut, asignacionDocenteId: asig.id, fecha: this.fecha, estado: this.registros[al.id] || 'PRESENTE'
-    }))).subscribe({ next: () => { this.guardado = true; } });
+      rutAlumno: al.rut, asignacionDocenteId: asig.id, fecha: this.fecha, estado: this.registros[al.id] || 'PRESENTE'
+    }))).subscribe({
+      next: () => {
+        this.guardado = true;
+        this.errorMsg = '';
+      },
+      error: () => {
+        this.errorMsg = 'Error al registrar la asistencia. Intenta nuevamente.';
+      }
+    });
   }
 }

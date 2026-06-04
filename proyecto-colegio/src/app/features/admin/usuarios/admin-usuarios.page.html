@@ -1,5 +1,7 @@
 <app-layout pageTitle="Gestión de Usuarios">
   <div class="animate-in">
+    <div *ngIf="exitoMsg" style="background:#f0fff4;border:1px solid #c6f6d5;color:#2F855A;padding:10px 16px;border-radius:8px;margin-bottom:16px;font-weight:600;font-size:13px">{{ exitoMsg }}</div>
+    <div *ngIf="errorMsg && !showModal" style="background:#fff5f5;border:1px solid #fed7d7;color:#C53030;padding:10px 16px;border-radius:8px;margin-bottom:16px;font-weight:600;font-size:13px">{{ errorMsg }}</div>
     <div class="page-actions">
       <div class="filters">
         <input class="form-input" style="max-width:260px" type="text" placeholder="Buscar nombre o RUT..."
@@ -41,7 +43,7 @@
             <td style="display:flex;gap:6px;align-items:center">
               <button *ngIf="(u.nombreRol || u.rol) === 'APODERADO'" class="btn-secondary"
                 style="font-size:11px;padding:4px 8px" (click)="abrirAsociacion(u)">
-                Asociar alumno
+                Ver alumnos asociados
               </button>
               <button class="btn-icon" (click)="eliminar(u.id)">
                 <ion-icon name="trash-outline"></ion-icon>
@@ -111,6 +113,10 @@
 
       <ng-container *ngIf="nuevo.rol === 'ALUMNO'">
         <div class="form-group">
+          <label class="form-label">Edad</label>
+          <input class="form-input" type="number" [(ngModel)]="nuevo.edad" placeholder="Ej: 14" min="1" max="99" />
+        </div>
+        <div class="form-group">
           <label class="form-label">Fecha de Nacimiento</label>
           <input class="form-input" type="date" [(ngModel)]="nuevo.fechaNacimiento" />
         </div>
@@ -137,6 +143,14 @@
           <label class="form-label">Teléfono</label>
           <input class="form-input" [(ngModel)]="nuevo.telefono" placeholder="+56 9 1234 5678" />
         </div>
+        <div class="form-group">
+          <label class="form-label">Fecha de Nacimiento</label>
+          <input class="form-input" type="date" [(ngModel)]="nuevo.fechaNacimiento" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Fecha de Contrato</label>
+          <input class="form-input" type="date" [(ngModel)]="nuevo.fechaContrato" />
+        </div>
       </ng-container>
 
       <ng-container *ngIf="nuevo.rol === 'APODERADO'">
@@ -145,12 +159,24 @@
           <input class="form-input" [(ngModel)]="nuevo.telefono" placeholder="+56 9 1234 5678" />
         </div>
         <div class="form-group">
+          <label class="form-label">Teléfono de Emergencia</label>
+          <input class="form-input" [(ngModel)]="nuevo.telefonoEmergencia" placeholder="+56 9 8765 4321" />
+        </div>
+        <div class="form-group">
           <label class="form-label">Correo</label>
           <input class="form-input" [(ngModel)]="nuevo.correo" placeholder="correo@gmail.com" />
         </div>
         <div class="form-group">
           <label class="form-label">Parentesco</label>
           <input class="form-input" [(ngModel)]="nuevo.parentesco" placeholder="Ej: Padre, Madre" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Dirección</label>
+          <input class="form-input" [(ngModel)]="nuevo.direccion" placeholder="Ej: Av. Principal 123" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Fecha de Nacimiento</label>
+          <input class="form-input" type="date" [(ngModel)]="nuevo.fechaNacimiento" />
         </div>
       </ng-container>
 
@@ -166,20 +192,50 @@
   </div>
 </div>
 
-<!-- MODAL ASOCIAR ALUMNO -->
+<!-- MODAL APODERADO: VER Y ASOCIAR ALUMNOS -->
 <div class="modal-overlay" *ngIf="showModalAsociacion" (click)="cerrarAsociacion()">
-  <div class="modal-box" (click)="$event.stopPropagation()">
+  <div class="modal-box" style="max-width:560px" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <span class="content-card-title">Asociar Alumno</span>
+      <span class="content-card-title">Apoderado — Alumnos Asociados</span>
       <button class="btn-icon" (click)="cerrarAsociacion()"><ion-icon name="close-outline"></ion-icon></button>
     </div>
-    <div class="paso-info">
-      Apoderado: <strong>{{ apoderadoSeleccionado?.nombre }} {{ apoderadoSeleccionado?.apellido }}</strong>
-      — RUT: <strong>{{ apoderadoSeleccionado?.rut }}</strong>
+
+    <!-- Info apoderado -->
+    <div style="background:#EBF8FF;border:1px solid #BEE3F8;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:13px;color:#2B6CB0">
+      <strong>{{ apoderadoSeleccionado?.nombre || '—' }} {{ apoderadoSeleccionado?.apellido || '' }}</strong>
+      &nbsp;|&nbsp; RUT: <strong>{{ apoderadoSeleccionado?.rut }}</strong>
     </div>
+
+    <!-- Lista de alumnos asociados -->
+    <div style="margin-bottom:20px">
+      <div style="font-weight:600;font-size:13px;color:#2D3748;margin-bottom:8px">Alumnos asociados</div>
+      <div *ngIf="loadingAlumnosAsociados" style="color:#718096;font-size:13px;padding:12px 0;text-align:center">
+        Cargando...
+      </div>
+      <table *ngIf="!loadingAlumnosAsociados && alumnosAsociados.length > 0" class="data-table">
+        <thead><tr><th>Nombre</th><th>RUT</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let a of alumnosAsociados">
+            <td>{{ a.nombre }} {{ a.apellido }}</td>
+            <td style="font-family:monospace;font-size:12px;color:#718096">{{ a.rut }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div *ngIf="!loadingAlumnosAsociados && alumnosAsociados.length === 0"
+        style="color:#718096;font-size:13px;padding:12px;text-align:center;background:#F7FAFC;border-radius:6px">
+        Este apoderado no tiene alumnos asociados.
+      </div>
+    </div>
+
+    <!-- Divisor -->
+    <div style="border-top:1px solid #E2E8F0;margin-bottom:16px"></div>
+
+    <!-- Formulario asociar -->
+    <div style="font-weight:600;font-size:13px;color:#2D3748;margin-bottom:12px">Asociar nuevo alumno</div>
     <div class="form-group">
-      <label class="form-label">RUT del Alumno</label>
-      <input class="form-input" [(ngModel)]="asociacion.rutAlumno" placeholder="12345678-9" />
+      <label class="form-label">RUT del Alumno *</label>
+      <input class="form-input" [(ngModel)]="asociacion.rutAlumno" placeholder="Ej: 12345678-9"
+        style="text-transform:uppercase" />
     </div>
     <div class="form-group">
       <label class="form-label">¿Es apoderado principal?</label>
@@ -188,13 +244,19 @@
         <option [ngValue]="false">No</option>
       </select>
     </div>
-    <div *ngIf="errorAsociacion" style="color:red;font-size:13px;margin-bottom:8px">{{ errorAsociacion }}</div>
-    <div *ngIf="exitoAsociacion" style="color:green;font-size:13px;margin-bottom:8px">{{ exitoAsociacion }}</div>
+    <div *ngIf="errorAsociacion"
+      style="background:#fff5f5;border:1px solid #fed7d7;color:#C53030;padding:8px 12px;border-radius:6px;font-size:12px;font-weight:600;margin-bottom:8px">
+      {{ errorAsociacion }}
+    </div>
+    <div *ngIf="exitoAsociacion"
+      style="background:#f0fff4;border:1px solid #c6f6d5;color:#2F855A;padding:8px 12px;border-radius:6px;font-size:12px;font-weight:600;margin-bottom:8px">
+      {{ exitoAsociacion }}
+    </div>
     <div style="display:flex;gap:10px;margin-top:16px">
-      <button class="btn-secondary" style="flex:1" (click)="cerrarAsociacion()">Cancelar</button>
+      <button class="btn-secondary" style="flex:1" (click)="cerrarAsociacion()">Cerrar</button>
       <button class="btn-primary" style="flex:1;justify-content:center" (click)="asociar()"
-        [disabled]="loadingAsociacion">
-        {{ loadingAsociacion ? 'Asociando...' : 'Asociar' }}
+        [disabled]="loadingAsociacion || !asociacion.rutAlumno.trim()">
+        {{ loadingAsociacion ? 'Asociando...' : 'Asociar alumno' }}
       </button>
     </div>
   </div>

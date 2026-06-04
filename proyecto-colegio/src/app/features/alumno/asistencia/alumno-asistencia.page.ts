@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonContent, IonIcon } from '@ionic/angular/standalone';
 import { LayoutComponent } from '../../../shared/components/layout/layout.component';
@@ -12,8 +12,7 @@ import { ApiService } from '../../../core/services/api.service';
   standalone: true,
   imports: [CommonModule, IonContent, IonIcon, LayoutComponent],
   templateUrl: './alumno-asistencia.page.html',
-  styleUrls: ['./alumno-asistencia.page.scss'],
-  host: { class: 'ion-page' }
+  styleUrls: ['./alumno-asistencia.page.scss']
 })
 export class AlumnoAsistenciaPage implements OnInit {
   porcentaje = 0;
@@ -37,7 +36,7 @@ export class AlumnoAsistenciaPage implements OnInit {
         const mapa: Record<number, any> = {};
         registros.forEach((r: any) => {
           const aid = r.asignacionId || r.asignacionDocenteId || 0;
-          if (!mapa[aid]) mapa[aid] = { id: aid, nombre: r.asignatura || `Asig. ${aid}`, registros: [] };
+          if (!mapa[aid]) mapa[aid] = { id: aid, nombre: r.nombreAsignatura || r.asignatura || `Asig. ${aid}`, registros: [] };
           mapa[aid].registros.push(r);
         });
         this.asignaturas = Object.values(mapa);

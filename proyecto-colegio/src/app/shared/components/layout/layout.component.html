@@ -11,37 +11,37 @@
       <!-- ADMIN -->
       <ng-container *ngIf="currentUser?.rol==='ADMIN'">
         <div class="sidebar-section-label">Principal</div>
-        <a class="nav-item" (click)="navegarA('/admin/dashboard')">
+        <a class="nav-item" [class.active]="isActive('/admin/dashboard')" (click)="navegarA('/admin/dashboard')">
           <ion-icon name="grid-outline"></ion-icon> Dashboard
         </a>
         <div class="sidebar-section-label">Gestión</div>
-        <a class="nav-item" (click)="navegarA('/admin/usuarios')">
+        <a class="nav-item" [class.active]="isActive('/admin/usuarios')" (click)="navegarA('/admin/usuarios')">
           <ion-icon name="people-outline"></ion-icon> Usuarios
         </a>
-        <a class="nav-item" (click)="navegarA('/admin/cursos')">
+        <a class="nav-item" [class.active]="isActive('/admin/cursos')" (click)="navegarA('/admin/cursos')">
           <ion-icon name="school-outline"></ion-icon> Cursos
         </a>
-        <a class="nav-item" (click)="navegarA('/admin/asignaturas')">
+        <a class="nav-item" [class.active]="isActive('/admin/asignaturas')" (click)="navegarA('/admin/asignaturas')">
           <ion-icon name="book-outline"></ion-icon> Asignaturas
         </a>
-        <a class="nav-item" (click)="navegarA('/admin/asignaciones')">
+        <a class="nav-item" [class.active]="isActive('/admin/asignaciones')" (click)="navegarA('/admin/asignaciones')">
           <ion-icon name="clipboard-outline"></ion-icon> Asignaciones
         </a>
         <div class="sidebar-section-label">Académico</div>
-        <a class="nav-item" (click)="navegarA('/admin/evaluaciones')">
+        <a class="nav-item" [class.active]="isActive('/admin/evaluaciones')" (click)="navegarA('/admin/evaluaciones')">
           <ion-icon name="document-text-outline"></ion-icon> Evaluaciones
         </a>
-        <a class="nav-item" (click)="navegarA('/admin/notas')">
+        <a class="nav-item" [class.active]="isActive('/admin/notas')" (click)="navegarA('/admin/notas')">
           <ion-icon name="star-outline"></ion-icon> Notas
         </a>
-        <a class="nav-item" (click)="navegarA('/admin/asistencia')">
+        <a class="nav-item" [class.active]="isActive('/admin/asistencia')" (click)="navegarA('/admin/asistencia')">
           <ion-icon name="checkmark-circle-outline"></ion-icon> Asistencia
         </a>
-        <a class="nav-item" (click)="navegarA('/admin/anotaciones')">
+        <a class="nav-item" [class.active]="isActive('/admin/anotaciones')" (click)="navegarA('/admin/anotaciones')">
           <ion-icon name="pencil-outline"></ion-icon> Anotaciones
         </a>
         <div class="sidebar-section-label">Comunicación</div>
-        <a class="nav-item" (click)="navegarA('/admin/comunicaciones')">
+        <a class="nav-item" [class.active]="isActive('/admin/comunicaciones')" (click)="navegarA('/admin/comunicaciones')">
           <ion-icon name="chatbubbles-outline"></ion-icon> Mensajería
         </a>
       </ng-container>
@@ -49,24 +49,27 @@
       <!-- PROFESOR -->
       <ng-container *ngIf="currentUser?.rol==='PROFESOR'">
         <div class="sidebar-section-label">Principal</div>
-        <a class="nav-item" (click)="navegarA('/profesor/dashboard')">
+        <a class="nav-item" [class.active]="isActive('/profesor/dashboard')" (click)="navegarA('/profesor/dashboard')">
           <ion-icon name="grid-outline"></ion-icon> Dashboard
         </a>
         <div class="sidebar-section-label">Académico</div>
-        <a class="nav-item" (click)="navegarA('/profesor/mis-cursos')">
+        <a class="nav-item" [class.active]="isActive('/profesor/mis-cursos')" (click)="navegarA('/profesor/mis-cursos')">
           <ion-icon name="school-outline"></ion-icon> Mis Cursos
         </a>
-        <a class="nav-item" (click)="navegarA('/profesor/asistencia')">
+        <a class="nav-item" [class.active]="isActive('/profesor/asistencia')" (click)="navegarA('/profesor/asistencia')">
           <ion-icon name="checkmark-circle-outline"></ion-icon> Tomar Asistencia
         </a>
-        <a class="nav-item" (click)="navegarA('/profesor/notas')">
+        <a class="nav-item" [class.active]="isActive('/profesor/evaluaciones')" (click)="navegarA('/profesor/evaluaciones')">
+          <ion-icon name="document-text-outline"></ion-icon> Evaluaciones
+        </a>
+        <a class="nav-item" [class.active]="isActive('/profesor/notas')" (click)="navegarA('/profesor/notas')">
           <ion-icon name="star-outline"></ion-icon> Registrar Notas
         </a>
-        <a class="nav-item" (click)="navegarA('/profesor/anotaciones')">
+        <a class="nav-item" [class.active]="isActive('/profesor/anotaciones')" (click)="navegarA('/profesor/anotaciones')">
           <ion-icon name="pencil-outline"></ion-icon> Anotaciones
         </a>
         <div class="sidebar-section-label">Comunicación</div>
-        <a class="nav-item" (click)="navegarA('/profesor/comunicaciones')">
+        <a class="nav-item" [class.active]="isActive('/profesor/comunicaciones')" (click)="navegarA('/profesor/comunicaciones')">
           <ion-icon name="chatbubbles-outline"></ion-icon> Mensajería
         </a>
       </ng-container>
@@ -74,20 +77,20 @@
       <!-- ALUMNO -->
       <ng-container *ngIf="currentUser?.rol==='ALUMNO'">
         <div class="sidebar-section-label">Mi Información</div>
-        <a class="nav-item" (click)="navegarA('/alumno/dashboard')">
+        <a class="nav-item" [class.active]="isActive('/alumno/dashboard')" (click)="navegarA('/alumno/dashboard')">
           <ion-icon name="grid-outline"></ion-icon> Dashboard
         </a>
-        <a class="nav-item" (click)="navegarA('/alumno/notas')">
+        <a class="nav-item" [class.active]="isActive('/alumno/notas')" (click)="navegarA('/alumno/notas')">
           <ion-icon name="star-outline"></ion-icon> Mis Notas
         </a>
-        <a class="nav-item" (click)="navegarA('/alumno/asistencia')">
+        <a class="nav-item" [class.active]="isActive('/alumno/asistencia')" (click)="navegarA('/alumno/asistencia')">
           <ion-icon name="checkmark-circle-outline"></ion-icon> Mi Asistencia
         </a>
-        <a class="nav-item" (click)="navegarA('/alumno/anotaciones')">
+        <a class="nav-item" [class.active]="isActive('/alumno/anotaciones')" (click)="navegarA('/alumno/anotaciones')">
           <ion-icon name="pencil-outline"></ion-icon> Mis Anotaciones
         </a>
         <div class="sidebar-section-label">Comunicación</div>
-        <a class="nav-item" (click)="navegarA('/alumno/comunicaciones')">
+        <a class="nav-item" [class.active]="isActive('/alumno/comunicaciones')" (click)="navegarA('/alumno/comunicaciones')">
           <ion-icon name="chatbubbles-outline"></ion-icon> Mensajería
         </a>
       </ng-container>
@@ -95,20 +98,20 @@
       <!-- APODERADO -->
       <ng-container *ngIf="currentUser?.rol==='APODERADO'">
         <div class="sidebar-section-label">Mi Pupilo</div>
-        <a class="nav-item" (click)="navegarA('/apoderado/dashboard')">
+        <a class="nav-item" [class.active]="isActive('/apoderado/dashboard')" (click)="navegarA('/apoderado/dashboard')">
           <ion-icon name="grid-outline"></ion-icon> Dashboard
         </a>
-        <a class="nav-item" (click)="navegarA('/apoderado/notas')">
+        <a class="nav-item" [class.active]="isActive('/apoderado/notas')" (click)="navegarA('/apoderado/notas')">
           <ion-icon name="star-outline"></ion-icon> Notas
         </a>
-        <a class="nav-item" (click)="navegarA('/apoderado/asistencia')">
+        <a class="nav-item" [class.active]="isActive('/apoderado/asistencia')" (click)="navegarA('/apoderado/asistencia')">
           <ion-icon name="checkmark-circle-outline"></ion-icon> Asistencia
         </a>
-        <a class="nav-item" (click)="navegarA('/apoderado/anotaciones')">
+        <a class="nav-item" [class.active]="isActive('/apoderado/anotaciones')" (click)="navegarA('/apoderado/anotaciones')">
           <ion-icon name="pencil-outline"></ion-icon> Anotaciones
         </a>
         <div class="sidebar-section-label">Comunicación</div>
-        <a class="nav-item" (click)="navegarA('/apoderado/comunicaciones')">
+        <a class="nav-item" [class.active]="isActive('/apoderado/comunicaciones')" (click)="navegarA('/apoderado/comunicaciones')">
           <ion-icon name="chatbubbles-outline"></ion-icon> Mensajería
         </a>
       </ng-container>

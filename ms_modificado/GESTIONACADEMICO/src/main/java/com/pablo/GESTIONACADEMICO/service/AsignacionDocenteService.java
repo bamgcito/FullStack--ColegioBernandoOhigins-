@@ -7,7 +7,11 @@ import com.pablo.GESTIONACADEMICO.model.Asignatura;
 import com.pablo.GESTIONACADEMICO.model.AsignacionDocente;
 import com.pablo.GESTIONACADEMICO.repository.AsignacionDocenteRepository;
 import com.pablo.GESTIONACADEMICO.repository.AsignaturaRepository;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -26,8 +30,14 @@ public class AsignacionDocenteService {
     @Autowired
     private RestTemplate restTemplate;
 
-    public String crearAsignacion(AsignacionDocenteDTO dto) {
-        UsuarioDTO profesor = obtenerUsuarioPorRut(dto.getRutProfesor());
+    @CircuitBreaker(name = "usuarioService", fallbackMethod = "fallbackCrearAsignacion")
+    public String crearAsignacion(AsignacionDocenteDTO dto, String auth) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", auth);
+        UsuarioDTO profesor = restTemplate.exchange(
+            "http://GESTIONUSUARIO/usuarios/rut/" + dto.getRutProfesor(),
+            HttpMethod.GET, new HttpEntity<>(headers), UsuarioDTO.class).getBody();
+
         if (profesor == null) {
             return "No existe un usuario con RUT: " + dto.getRutProfesor();
         }
@@ -82,5 +92,9 @@ public class AsignacionDocenteService {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    private String fallbackCrearAsignacion(AsignacionDocenteDTO dto, String auth, Throwable t) {
+        return "El servicio de usuarios no está disponible. Intente nuevamente más tarde.";
     }
 }

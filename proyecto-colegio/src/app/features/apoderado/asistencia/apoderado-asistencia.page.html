@@ -1,10 +1,32 @@
 <app-layout pageTitle="Asistencia del Pupilo">
   <div class="animate-in">
-    <div class="content-card">
-      <div class="content-card-header"><span class="content-card-title">Asistencia del Pupilo — {{ pupiloNombre }}</span><span class="badge badge-info">{{ items.length }}</span></div>
-      <div class="content-card-body" *ngIf="items.length===0" style="text-align:center;color:#718096;padding:40px">Sin registros</div>
-      <table class="data-table" *ngIf="items.length>0"><thead><tr><th>Detalle</th><th>Valor</th></tr></thead>
-      <tbody><tr *ngFor="let i of items"><td style="font-size:12px;color:#718096">Registro #{{ i.id }}</td><td>{{ i.nota || i.estado || i.tipo || '—' }}</td></tr></tbody></table>
+    <div *ngIf="sinAlumno" class="content-card" style="text-align:center;padding:40px;color:#718096">
+      No tienes alumnos asociados.
     </div>
+    <ng-container *ngIf="!sinAlumno">
+      <div class="content-card" style="margin-bottom:16px">
+        <div class="content-card-header">
+          <span class="content-card-title">Porcentaje de Asistencia — {{ pupiloNombre }}</span>
+          <span class="badge" [ngClass]="porcentaje >= 75 ? 'badge-success' : 'badge-danger'">{{ porcentaje }}%</span>
+        </div>
+      </div>
+      <div class="content-card">
+        <div class="content-card-header">
+          <span class="content-card-title">Registros de Asistencia</span>
+          <span class="badge badge-info">{{ registros.length }}</span>
+        </div>
+        <div *ngIf="!registros.length" style="text-align:center;padding:32px;color:#718096">Sin registros de asistencia</div>
+        <table class="data-table" *ngIf="registros.length">
+          <thead><tr><th>Asignatura</th><th>Fecha</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let r of registros">
+              <td>{{ r.nombreAsignatura || r.asignatura || 'Sin asignatura' }}</td>
+              <td style="font-size:12px;color:#718096">{{ r.fecha }}</td>
+              <td><span class="badge" [ngClass]="badge(r.estado)">{{ r.estado }}</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
   </div>
 </app-layout>

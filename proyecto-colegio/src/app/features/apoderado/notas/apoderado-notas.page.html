@@ -1,10 +1,31 @@
 <app-layout pageTitle="Notas del Pupilo">
   <div class="animate-in">
-    <div class="content-card">
-      <div class="content-card-header"><span class="content-card-title">Notas del Pupilo — {{ pupiloNombre }}</span><span class="badge badge-info">{{ items.length }}</span></div>
-      <div class="content-card-body" *ngIf="items.length===0" style="text-align:center;color:#718096;padding:40px">Sin registros</div>
-      <table class="data-table" *ngIf="items.length>0"><thead><tr><th>Detalle</th><th>Valor</th></tr></thead>
-      <tbody><tr *ngFor="let i of items"><td style="font-size:12px;color:#718096">Registro #{{ i.id }}</td><td>{{ i.nota || i.estado || i.tipo || '—' }}</td></tr></tbody></table>
+    <div *ngIf="sinAlumno" class="content-card" style="text-align:center;padding:40px;color:#718096">
+      No tienes alumnos asociados.
     </div>
+    <ng-container *ngIf="!sinAlumno">
+      <div class="content-card" style="margin-bottom:16px">
+        <div class="content-card-header">
+          <span class="content-card-title">Promedio General — {{ pupiloNombre }}</span>
+          <span class="nota-chip" [ngClass]="notaClass(promedio)" *ngIf="promedio">{{ promedio | number:'1.1-1' }}</span>
+        </div>
+      </div>
+      <div class="content-card">
+        <div class="content-card-header">
+          <span class="content-card-title">Notas Registradas</span>
+          <span class="badge badge-info">{{ notas.length }}</span>
+        </div>
+        <div *ngIf="!notas.length" style="text-align:center;padding:32px;color:#718096">Sin notas registradas</div>
+        <table class="data-table" *ngIf="notas.length">
+          <thead><tr><th>Asignatura</th><th>Nota</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let n of notas">
+              <td>{{ n.nombreAsignatura || n.asignatura || 'Sin asignatura' }}</td>
+              <td><span class="nota-chip" [ngClass]="notaClass(n.nota)">{{ n.nota }}</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
   </div>
 </app-layout>

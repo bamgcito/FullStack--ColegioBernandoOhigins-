@@ -16,12 +16,12 @@
           <span class="content-card-title">Mis Cursos y Asignaturas</span>
         </div>
         <table class="data-table">
-          <thead><tr><th>Asignatura</th><th>Curso</th><th>Alumnos</th></tr></thead>
+          <thead><tr><th>Asignatura</th><th>Curso</th></tr></thead>
           <tbody>
+            <tr *ngIf="!asignaciones.length"><td colspan="2" style="text-align:center;padding:20px;color:#718096">Sin asignaciones</td></tr>
             <tr *ngFor="let a of asignaciones">
               <td><strong>{{ a.asignatura }}</strong></td>
               <td>{{ a.cursoNombre }}</td>
-              <td><span class="badge badge-info">{{ a.totalAlumnos }}</span></td>
             </tr>
           </tbody>
         </table>
@@ -34,7 +34,7 @@
           <thead><tr><th>Alumno</th><th>Tipo</th><th>Descripción</th></tr></thead>
           <tbody>
             <tr *ngFor="let a of anotaciones">
-              <td>{{ getAlumno(a.alumnoId) }}</td>
+              <td>{{ a.rutAlumno }}</td>
               <td><span class="badge" [ngClass]="badge(a.tipo)">{{ a.tipo }}</span></td>
               <td style="font-size:12px">{{ a.descripcion }}</td>
             </tr>

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { IonContent, IonIcon } from '@ionic/angular/standalone';
@@ -13,8 +13,7 @@ import { forkJoin } from 'rxjs';
   standalone: true,
   imports: [CommonModule, RouterLink, IonContent, IonIcon, LayoutComponent],
   templateUrl: './admin-dashboard.page.html',
-  styleUrls: ['./admin-dashboard.page.scss'],
-  host: { class: 'ion-page' }
+  styleUrls: ['./admin-dashboard.page.scss']
 })
 export class AdminDashboardPage implements OnInit {
   cursos: any[] = [];
@@ -33,7 +32,7 @@ export class AdminDashboardPage implements OnInit {
   cargar() {
     this.loading = true;
 
-    // Usuarios — independiente para que no falle con los otros
+    // Usuarios â€” independiente para que no falle con los otros
     this.api.getUsuarios().subscribe({
       next: usuarios => {
         const usuariosAlumno = usuarios.filter((u: any) => (u.nombreRol || u.rol) === 'ALUMNO');
@@ -68,13 +67,13 @@ export class AdminDashboardPage implements OnInit {
       error: () => { console.error('Error cargando usuarios'); }
     });
 
-    // Cursos — independiente
+    // Cursos â€” independiente
     this.api.getCursos().subscribe({
       next: cursos => { this.cursos = cursos; this.stats.totalCursos = cursos.length; },
       error: () => { this.stats.totalCursos = 0; }
     });
 
-    // Asignaturas — independiente
+    // Asignaturas â€” independiente
     this.api.getAsignaturas().subscribe({
       next: asignaturas => { this.stats.totalAsignaturas = asignaturas.length; },
       error: () => { this.stats.totalAsignaturas = 0; }
@@ -86,12 +85,17 @@ export class AdminDashboardPage implements OnInit {
   getProfesor(id: number | null) {
     if (!id) return 'Sin asignar';
     const p = this.profesores.find(p => p.id === id);
-    return p ? `${p.nombre} ${p.apellido}` : '—';
+    return p ? `${p.nombre} ${p.apellido}` : 'â€”';
   }
 
   getAlumno(id: number) {
     const a = this.alumnos.find(a => a.id === id);
-    return a ? `${a.nombre} ${a.apellido}` : '—';
+    return a ? `${a.nombre} ${a.apellido}` : 'â€”';
+  }
+
+  getAlumnoByRut(rut: string) {
+    const a = this.alumnos.find(a => a.rut === rut);
+    return a ? `${a.nombre} ${a.apellido}` : rut || 'â€”';
   }
 
   promedio(id: number) { return 0; }

@@ -6,9 +6,12 @@ import { LayoutComponent } from '../../../shared/components/layout/layout.compon
 import { addIcons } from 'ionicons';
 import { personAddOutline, trashOutline, closeOutline } from 'ionicons/icons';
 import { ApiService } from '../../../core/services/api.service';
+import { forkJoin } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 const ROL_IDS: Record<string, number> = {
-  ADMIN: 1, PROFESOR: 2, ALUMNO: 3, APODERADO: 4
+  ADMIN: 1, ALUMNO: 2, PROFESOR: 3, APODERADO: 4
 };
 
 @Component({
@@ -16,8 +19,7 @@ const ROL_IDS: Record<string, number> = {
   standalone: true,
   imports: [CommonModule, FormsModule, IonContent, IonIcon, LayoutComponent],
   templateUrl: './admin-usuarios.page.html',
-  styleUrls: ['./admin-usuarios.page.scss'],
-  host: { class: 'ion-page' }
+  styleUrls: ['./admin-usuarios.page.scss']
 })
 export class AdminUsuariosPage implements OnInit {
   usuarios: any[] = [];
@@ -29,20 +31,22 @@ export class AdminUsuariosPage implements OnInit {
   loadingPaso1 = false;
   loadingPaso2 = false;
   errorMsg = '';
+  exitoMsg = '';
   nuevo = {
     nombre: '', apellido: '', rut: '', password: '', rol: 'ALUMNO',
-    fechaNacimiento: '', direccion: '', fechaMatricula: '',
+    fechaNacimiento: '', direccion: '', fechaMatricula: '', edad: null as number | null,
     especialidad: '', correoInstitucional: '', telefono: '',
-    correo: '', parentesco: ''
+    correo: '', parentesco: '', telefonoEmergencia: '', fechaContrato: ''
   };
 
-  // Asociación
   showModalAsociacion = false;
   loadingAsociacion = false;
   errorAsociacion = '';
   exitoAsociacion = '';
   apoderadoSeleccionado: any = null;
   asociacion = { rutApoderado: '', rutAlumno: '', esPrincipal: true };
+  alumnosAsociados: any[] = [];
+  loadingAlumnosAsociados = false;
 
   get filtrados() {
     return this.usuarios.filter(u => {
@@ -61,7 +65,27 @@ export class AdminUsuariosPage implements OnInit {
   cargar() {
     this.loading = true;
     this.api.getUsuarios().subscribe({
-      next: data => { this.usuarios = data; this.loading = false; },
+      next: data => {
+        this.usuarios = data;
+        this.loading = false;
+        const alumnoUsers = data.filter((u: any) => (u.nombreRol || u.rol) === 'ALUMNO');
+        const profUsers = data.filter((u: any) => (u.nombreRol || u.rol) === 'PROFESOR');
+        const calls = [
+          ...alumnoUsers.map((u: any) => this.api.getAlumnoPorId(u.id).pipe(catchError(() => of(null)))),
+          ...profUsers.map((u: any) => this.api.getProfesorPorId(u.id).pipe(catchError(() => of(null))))
+        ];
+        if (!calls.length) return;
+        forkJoin(calls).subscribe({
+          next: perfiles => {
+            const mapa: Record<string, { nombre: string; apellido: string }> = {};
+            perfiles.forEach((p: any) => { if (p?.rut) mapa[p.rut] = { nombre: p.nombre, apellido: p.apellido }; });
+            this.usuarios = this.usuarios.map((u: any) => {
+              const p = mapa[u.rut];
+              return p ? { ...u, nombre: p.nombre, apellido: p.apellido } : u;
+            });
+          }
+        });
+      },
       error: () => { this.errorMsg = 'Error al cargar usuarios'; this.loading = false; }
     });
   }
@@ -73,13 +97,21 @@ export class AdminUsuariosPage implements OnInit {
   abrirModal() {
     this.paso = 1;
     this.errorMsg = '';
+    this.exitoMsg = '';
     this.nuevo = {
       nombre: '', apellido: '', rut: '', password: '', rol: 'ALUMNO',
-      fechaNacimiento: '', direccion: '', fechaMatricula: '',
+      fechaNacimiento: '', direccion: '', fechaMatricula: '', edad: null,
       especialidad: '', correoInstitucional: '', telefono: '',
-      correo: '', parentesco: ''
+      correo: '', parentesco: '', telefonoEmergencia: '', fechaContrato: ''
     };
     this.showModal = true;
+  }
+
+  private parseMensaje(resp: any): string {
+    try {
+      const p = typeof resp === 'string' ? JSON.parse(resp) : resp;
+      return p?.mensaje ?? String(resp);
+    } catch { return String(resp); }
   }
 
   crearUsuario() {
@@ -89,17 +121,20 @@ export class AdminUsuariosPage implements OnInit {
     }
     this.errorMsg = '';
     this.loadingPaso1 = true;
+    const rut = this.nuevo.rut.trim().toUpperCase();
     const rolId = ROL_IDS[this.nuevo.rol] ?? 3;
 
-    this.api.crearUsuario({ rut: this.nuevo.rut, contrasena: this.nuevo.password, rolId }, 'text').subscribe({
+    this.api.crearUsuario({ rut, contrasena: this.nuevo.password, rolId }, 'text').subscribe({
       next: (resp: any) => {
         this.loadingPaso1 = false;
-        if (typeof resp === 'string' && resp.toLowerCase().includes('ya existe')) {
-          this.errorMsg = resp;
+        const msg = this.parseMensaje(resp);
+        if (msg.toLowerCase().includes('ya existe')) {
+          this.errorMsg = msg;
           return;
         }
         if (this.nuevo.rol === 'ADMIN') {
           this.cerrarModal();
+          this.exitoMsg = 'Administrador creado correctamente';
           this.cargar();
           return;
         }
@@ -112,7 +147,7 @@ export class AdminUsuariosPage implements OnInit {
         } else if (typeof err?.error === 'string') {
           this.errorMsg = err.error;
         } else {
-          this.errorMsg = `Error ${err?.status || ''}: ${err?.error?.error || 'Error al crear usuario'}`;
+          this.errorMsg = 'No se pudo crear el usuario. Revisa los datos ingresados.';
         }
       }
     });
@@ -126,12 +161,12 @@ export class AdminUsuariosPage implements OnInit {
     this.errorMsg = '';
     this.loadingPaso2 = true;
 
-    const base = { rut: this.nuevo.rut, nombre: this.nuevo.nombre, apellido: this.nuevo.apellido };
+    const base = { rut: this.nuevo.rut.trim().toUpperCase(), nombre: this.nuevo.nombre.trim(), apellido: this.nuevo.apellido.trim() };
     const perfil = this.nuevo.rol === 'ALUMNO'
-      ? { ...base, fechaNacimiento: this.nuevo.fechaNacimiento || null, direccion: this.nuevo.direccion || null, fechaMatricula: this.nuevo.fechaMatricula || null }
+      ? { ...base, fechaNacimiento: this.nuevo.fechaNacimiento || null, direccion: this.nuevo.direccion?.trim() || null, fechaMatricula: this.nuevo.fechaMatricula || null, edad: this.nuevo.edad || null }
       : this.nuevo.rol === 'PROFESOR'
-        ? { ...base, especialidad: this.nuevo.especialidad || null, correoInstitucional: this.nuevo.correoInstitucional || null, telefono: this.nuevo.telefono || null }
-        : { ...base, telefono: this.nuevo.telefono || null, correo: this.nuevo.correo || null, parentesco: this.nuevo.parentesco || null };
+        ? { ...base, especialidad: this.nuevo.especialidad?.trim() || null, correoInstitucional: this.nuevo.correoInstitucional?.trim() || null, telefono: this.nuevo.telefono?.trim() || null, fechaNacimiento: this.nuevo.fechaNacimiento || null, fechaContrato: this.nuevo.fechaContrato || null }
+        : { ...base, telefono: this.nuevo.telefono?.trim() || null, correo: this.nuevo.correo?.trim() || null, parentesco: this.nuevo.parentesco?.trim() || null, telefonoEmergencia: this.nuevo.telefonoEmergencia?.trim() || null, direccion: this.nuevo.direccion?.trim() || null, fechaNacimiento: this.nuevo.fechaNacimiento || null };
 
     const perfil$ = this.nuevo.rol === 'ALUMNO' ? this.api.crearAlumno(perfil, 'text')
       : this.nuevo.rol === 'PROFESOR' ? this.api.crearProfesor(perfil, 'text')
@@ -141,6 +176,7 @@ export class AdminUsuariosPage implements OnInit {
       next: () => {
         this.loadingPaso2 = false;
         this.cerrarModal();
+        this.exitoMsg = 'Usuario creado correctamente';
         this.cargar();
       },
       error: (err) => {
@@ -162,23 +198,33 @@ export class AdminUsuariosPage implements OnInit {
     this.errorMsg = '';
     this.nuevo = {
       nombre: '', apellido: '', rut: '', password: '', rol: 'ALUMNO',
-      fechaNacimiento: '', direccion: '', fechaMatricula: '',
+      fechaNacimiento: '', direccion: '', fechaMatricula: '', edad: null,
       especialidad: '', correoInstitucional: '', telefono: '',
-      correo: '', parentesco: ''
+      correo: '', parentesco: '', telefonoEmergencia: '', fechaContrato: ''
     };
   }
 
-  // ── ASOCIACIÓN ──────────────────────────────────────
   abrirAsociacion(usuario: any) {
     this.apoderadoSeleccionado = usuario;
     this.asociacion = { rutApoderado: usuario.rut, rutAlumno: '', esPrincipal: true };
     this.errorAsociacion = '';
     this.exitoAsociacion = '';
+    this.alumnosAsociados = [];
     this.showModalAsociacion = true;
+    this.cargarAlumnosAsociados();
+  }
+
+  private cargarAlumnosAsociados() {
+    if (!this.apoderadoSeleccionado?.id) return;
+    this.loadingAlumnosAsociados = true;
+    this.api.getAlumnosDeApoderado(this.apoderadoSeleccionado.id).subscribe({
+      next: (data) => { this.alumnosAsociados = data || []; this.loadingAlumnosAsociados = false; },
+      error: () => { this.alumnosAsociados = []; this.loadingAlumnosAsociados = false; }
+    });
   }
 
   asociar() {
-    if (!this.asociacion.rutAlumno) {
+    if (!this.asociacion.rutAlumno.trim()) {
       this.errorAsociacion = 'Ingresa el RUT del alumno';
       return;
     }
@@ -186,14 +232,22 @@ export class AdminUsuariosPage implements OnInit {
     this.exitoAsociacion = '';
     this.loadingAsociacion = true;
 
-    this.api.asociarApoderado(this.asociacion, 'text').subscribe({
+    const payload = {
+      rutAlumno: this.asociacion.rutAlumno.trim().toUpperCase(),
+      rutApoderado: this.asociacion.rutApoderado.trim().toUpperCase(),
+      esPrincipal: this.asociacion.esPrincipal
+    };
+
+    this.api.asociarApoderado(payload, 'text').subscribe({
       next: (resp: any) => {
         this.loadingAsociacion = false;
-        if (typeof resp === 'string' && resp.toLowerCase().includes('error')) {
-          this.errorAsociacion = resp;
+        const msg = this.parseMensaje(resp);
+        if (msg.toLowerCase().includes('error') || msg.toLowerCase().includes('no existe') || msg.toLowerCase().includes('ya está')) {
+          this.errorAsociacion = msg;
         } else {
-          this.exitoAsociacion = typeof resp === 'string' ? resp : 'Asociación realizada correctamente';
+          this.exitoAsociacion = msg || 'Asociación realizada correctamente';
           this.asociacion.rutAlumno = '';
+          this.cargarAlumnosAsociados();
         }
       },
       error: (err) => {
@@ -203,7 +257,7 @@ export class AdminUsuariosPage implements OnInit {
         } else if (typeof err?.error === 'string') {
           this.errorAsociacion = err.error;
         } else {
-          this.errorAsociacion = 'Error al asociar apoderado';
+          this.errorAsociacion = 'Error al asociar apoderado. Verifica el RUT e intenta nuevamente.';
         }
       }
     });
@@ -214,10 +268,18 @@ export class AdminUsuariosPage implements OnInit {
     this.apoderadoSeleccionado = null;
     this.errorAsociacion = '';
     this.exitoAsociacion = '';
+    this.alumnosAsociados = [];
+    this.loadingAlumnosAsociados = false;
   }
 
   eliminar(id: number) {
-    if (id === 1) { alert('No puedes eliminar al admin.'); return; }
-    this.usuarios = this.usuarios.filter(u => u.id !== id);
+    if (id === 1) { this.errorMsg = 'No puedes eliminar al administrador principal'; return; }
+    if (!confirm('¿Estás seguro de eliminar este usuario?')) return;
+    this.exitoMsg = '';
+    this.errorMsg = '';
+    this.api.eliminarUsuario(id).subscribe({
+      next: () => { this.exitoMsg = 'Usuario eliminado correctamente'; this.cargar(); },
+      error: () => { this.errorMsg = 'Error al eliminar el usuario. Intenta nuevamente.'; }
+    });
   }
 }

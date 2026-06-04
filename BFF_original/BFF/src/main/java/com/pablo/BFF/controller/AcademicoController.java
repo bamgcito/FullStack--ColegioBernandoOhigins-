@@ -21,7 +21,7 @@ public class AcademicoController {
     @PostMapping("/asignaturas")
     public ResponseEntity<Object> crearAsignatura(@RequestBody Map<String, Object> body,
                                                    @RequestHeader("Authorization") String auth) {
-        return ms.post(ms.urlAcademico(), "/asignaturas", body, token(auth));
+        return ms.postForText(ms.urlAcademico(), "/asignaturas", body, token(auth));
     }
 
     @GetMapping("/asignaciones/curso/{cursoId}")
@@ -39,7 +39,7 @@ public class AcademicoController {
     @PostMapping("/asignaciones")
     public ResponseEntity<Object> crearAsignacion(@RequestBody Map<String, Object> body,
                                                    @RequestHeader("Authorization") String auth) {
-        return ms.post(ms.urlAcademico(), "/asignaciones", body, token(auth));
+        return ms.postForText(ms.urlAcademico(), "/asignaciones", body, token(auth));
     }
 
     @GetMapping("/evaluaciones/asignacion/{asignacionId}")
@@ -51,7 +51,7 @@ public class AcademicoController {
     @PostMapping("/evaluaciones")
     public ResponseEntity<Object> crearEvaluacion(@RequestBody Map<String, Object> body,
                                                    @RequestHeader("Authorization") String auth) {
-        return ms.post(ms.urlAcademico(), "/evaluaciones", body, token(auth));
+        return ms.postForText(ms.urlAcademico(), "/evaluaciones", body, token(auth));
     }
 
     @GetMapping("/notas/alumno")
@@ -75,7 +75,7 @@ public class AcademicoController {
     @PostMapping("/notas")
     public ResponseEntity<Object> registrarNota(@RequestBody Map<String, Object> body,
                                                  @RequestHeader("Authorization") String auth) {
-        return ms.post(ms.urlAcademico(), "/notas", body, token(auth));
+        return ms.postForText(ms.urlAcademico(), "/notas", body, token(auth));
     }
 
     private String token(String auth) { return auth.replace("Bearer ", ""); }

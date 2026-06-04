@@ -14,6 +14,9 @@ import com.pablo.GESTIONACADEMICO.repository.AsignaturaRepository;
 import com.pablo.GESTIONACADEMICO.repository.EvaluacionRepository;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -55,7 +58,7 @@ public class AsignaturaService {
         return resultado;
     }
 
-    public Object obtenerDetalle(Long asignaturaId, Long cursoId) {
+    public Object obtenerDetalle(Long asignaturaId, Long cursoId, String auth) {
         Asignatura asignatura = asignaturaRepository.findById(asignaturaId).orElse(null);
         if (asignatura == null) {
             return "Asignatura no encontrada con ID: " + asignaturaId;
@@ -67,18 +70,22 @@ public class AsignaturaService {
             return "No existe una asignación para esta asignatura en el curso con ID: " + cursoId;
         }
 
+        // GESTIONCURSO — GET /cursos/** es público, no requiere token
         CursoDTO curso = null;
         try {
             curso = restTemplate.getForObject("http://GESTIONCURSO/cursos/" + cursoId, CursoDTO.class);
-        } catch (Exception e) {
+        } catch (Exception e) { /* servicio no disponible */ }
 
-        }
-
+        // GESTIONUSUARIO — endpoint protegido, requiere reenviar Authorization
         ProfesorDTO profesor = null;
-        try {
-            profesor = restTemplate.getForObject("http://GESTIONUSUARIO/usuarios/profesores/" + asignacion.getProfesorId(), ProfesorDTO.class);
-        } catch (Exception e) {
-
+        if (auth != null) {
+            try {
+                HttpHeaders headers = new HttpHeaders();
+                headers.set("Authorization", auth);
+                profesor = restTemplate.exchange(
+                    "http://GESTIONUSUARIO/usuarios/profesores/" + asignacion.getProfesorId(),
+                    HttpMethod.GET, new HttpEntity<>(headers), ProfesorDTO.class).getBody();
+            } catch (Exception e) { /* servicio no disponible */ }
         }
 
         List<Evaluacion> evaluaciones = evaluacionRepository.findByAsignacionDocenteId(asignacion.getId());

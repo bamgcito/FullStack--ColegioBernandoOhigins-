@@ -21,31 +21,31 @@ public class UsuarioController {
     @PostMapping
     public ResponseEntity<Object> crear(@RequestBody Map<String, Object> body,
                                         @RequestHeader("Authorization") String auth) {
-        return ms.post(ms.urlUsuarios(), "/usuarios", body, token(auth));
+        return ms.postForText(ms.urlUsuarios(), "/usuarios", body, token(auth));
     }
 
     @PostMapping("/alumnos")
     public ResponseEntity<Object> crearAlumno(@RequestBody Map<String, Object> body,
                                                @RequestHeader("Authorization") String auth) {
-        return ms.post(ms.urlUsuarios(), "/usuarios/alumnos", body, token(auth));
+        return ms.postForText(ms.urlUsuarios(), "/usuarios/alumnos", body, token(auth));
     }
 
     @PostMapping("/profesores")
     public ResponseEntity<Object> crearProfesor(@RequestBody Map<String, Object> body,
                                                  @RequestHeader("Authorization") String auth) {
-        return ms.post(ms.urlUsuarios(), "/usuarios/profesores", body, token(auth));
+        return ms.postForText(ms.urlUsuarios(), "/usuarios/profesores", body, token(auth));
     }
 
     @PostMapping("/apoderados")
     public ResponseEntity<Object> crearApoderado(@RequestBody Map<String, Object> body,
                                                   @RequestHeader("Authorization") String auth) {
-        return ms.post(ms.urlUsuarios(), "/usuarios/apoderados", body, token(auth));
+        return ms.postForText(ms.urlUsuarios(), "/usuarios/apoderados", body, token(auth));
     }
 
     @PostMapping("/alumnos/apoderados")
     public ResponseEntity<Object> asociarApoderado(@RequestBody Map<String, Object> body,
                                                     @RequestHeader("Authorization") String auth) {
-        return ms.post(ms.urlUsuarios(), "/usuarios/alumnos/apoderados", body, token(auth));
+        return ms.postForText(ms.urlUsuarios(), "/usuarios/alumnos/apoderados", body, token(auth));
     }
 
     @GetMapping("/alumnos/{rut}/info")
@@ -64,6 +64,18 @@ public class UsuarioController {
     public ResponseEntity<Object> profesorPorId(@PathVariable Long id,
                                                  @RequestHeader("Authorization") String auth) {
         return ms.get(ms.urlUsuarios(), "/usuarios/profesores/" + id, token(auth));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Object> eliminar(@PathVariable Long id,
+                                            @RequestHeader("Authorization") String auth) {
+        return ms.deleteForText(ms.urlUsuarios(), "/usuarios/" + id, token(auth));
+    }
+
+    @GetMapping("/apoderados/{id}/alumnos")
+    public ResponseEntity<Object> alumnosDeApoderado(@PathVariable Long id,
+                                                      @RequestHeader("Authorization") String auth) {
+        return ms.get(ms.urlUsuarios(), "/usuarios/apoderados/" + id + "/alumnos", token(auth));
     }
 
     private String token(String auth) { return auth.replace("Bearer ", ""); }

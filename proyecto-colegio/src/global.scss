@@ -1,7 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap');
 
 * { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
 ion-content { --background: #ffffff; }
+
+ion-app { display: block; height: 100vh; }
+router-outlet + * { display: block; height: 100%; }
 
 /* ── Layout ── */
 .app-layout { display: flex; height: 100vh; overflow: hidden; }
