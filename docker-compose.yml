@@ -41,12 +41,27 @@ services:
     restart: unless-stopped
 
   # ── MICROSERVICIOS ───────────────────────────────────────────────────
-  gestionusuario:
+  auth-service:
     build:
-      context: ./ms_modificado/GESTIONUSUARIO
-    container_name: gestionusuario
+      context: ./authservice
+    container_name: auth-service
     ports:
-      - "8081:8081"
+      - "8094:8094"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    networks:
+      - colegio-net
+    depends_on:
+      eureka-server:
+        condition: service_started
+    restart: unless-stopped
+
+  ms-usuarios:
+    build:
+      context: ./ms-usuarios
+    container_name: ms-usuarios
+    ports:
+      - "8086:8086"
     environment:
       SPRING_PROFILES_ACTIVE: docker
     networks:
@@ -58,12 +73,12 @@ services:
         condition: service_started
     restart: unless-stopped
 
-  gestioncurso:
+  ms-perfiles:
     build:
-      context: ./ms_modificado/GESTIONCURSO
-    container_name: gestioncurso
+      context: ./ms-perfiles
+    container_name: ms-perfiles
     ports:
-      - "8082:8082"
+      - "8087:8087"
     environment:
       SPRING_PROFILES_ACTIVE: docker
     networks:
@@ -75,12 +90,12 @@ services:
         condition: service_started
     restart: unless-stopped
 
-  gestionacademico:
+  ms-cursos:
     build:
-      context: ./ms_modificado/GESTIONACADEMICO
-    container_name: gestionacademico
+      context: ./ms-cursos
+    container_name: ms-cursos
     ports:
-      - "8083:8083"
+      - "8088:8088"
     environment:
       SPRING_PROFILES_ACTIVE: docker
     networks:
@@ -92,12 +107,12 @@ services:
         condition: service_started
     restart: unless-stopped
 
-  gestionasistencia:
+  ms-asignatura:
     build:
-      context: ./ms_modificado/GESTIONASISTENCIA
-    container_name: gestionasistencia
+      context: ./ms-asignatura
+    container_name: ms-asignatura
     ports:
-      - "8084:8084"
+      - "8089:8089"
     environment:
       SPRING_PROFILES_ACTIVE: docker
     networks:
@@ -107,6 +122,76 @@ services:
         condition: service_healthy
       eureka-server:
         condition: service_started
+    restart: unless-stopped
+
+  ms-evaluaciones:
+    build:
+      context: ./ms-evaluaciones
+    container_name: ms-evaluaciones
+    ports:
+      - "8091:8091"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    networks:
+      - colegio-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    restart: unless-stopped
+
+  ms-notas:
+    build:
+      context: ./ms-notas
+    container_name: ms-notas
+    ports:
+      - "8092:8092"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    networks:
+      - colegio-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    restart: unless-stopped
+
+  ms-asistencia:
+    build:
+      context: ./ms-asistencia
+    container_name: ms-asistencia
+    ports:
+      - "8093:8093"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    networks:
+      - colegio-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    restart: unless-stopped
+
+  ms-comunicacion:
+    build:
+      context: ./ms-comunicacion
+    container_name: ms-comunicacion
+    ports:
+      - "3000:3000"
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: "123456789."
+      DB_NAME: comunicacion_db
+    networks:
+      - colegio-net
+    depends_on:
+      mysql:
+        condition: service_healthy
     restart: unless-stopped
 
   # ── BFF ──────────────────────────────────────────────────────────────
