@@ -1,21 +1,25 @@
 <app-layout pageTitle="Mis Notas">
   <div class="animate-in">
     <div class="kpi-grid" style="grid-template-columns:repeat(2,1fr);max-width:360px;margin-bottom:20px">
-      <div class="kpi-card"><div class="kpi-icon blue"><ion-icon name="stats-chart-outline"></ion-icon></div><div><div class="kpi-value">{{ promedio }}</div><div class="kpi-label">Promedio</div></div></div>
-      <div class="kpi-card"><div class="kpi-icon teal"><ion-icon name="document-text-outline"></ion-icon></div><div><div class="kpi-value">{{ asignaturas.length }}</div><div class="kpi-label">Asignaturas</div></div></div>
+      <div class="kpi-card"><div class="kpi-icon blue"><ion-icon name="stats-chart-outline"></ion-icon></div><div><div class="kpi-value">{{ promedio }}</div><div class="kpi-label">Promedio General</div></div></div>
+      <div class="kpi-card"><div class="kpi-icon teal"><ion-icon name="document-text-outline"></ion-icon></div><div><div class="kpi-value">{{ totalNotas }}</div><div class="kpi-label">Evaluaciones</div></div></div>
     </div>
-    <div *ngIf="asignaturas.length===0" class="content-card">
-      <div class="content-card-body" style="text-align:center;color:#718096;padding:40px">Sin notas registradas aún</div>
+
+    <div *ngIf="asignaturas.length === 0" class="content-card" style="text-align:center;color:#718096;padding:40px">
+      Sin notas registradas aún
     </div>
+
     <div class="accordion-item" *ngFor="let a of asignaturas">
       <div class="accordion-header" [class.open]="isOpen(a.id)" (click)="toggle(a.id)">
         <div style="display:flex;align-items:center;gap:10px">
           <ion-icon name="book-outline" style="color:#1E3A5F;font-size:16px"></ion-icon>
           <span>{{ a.nombre }}</span>
-          <span class="nota-chip" [ngClass]="notaClass(a.promedio)" style="margin-left:8px">Prom. {{ a.promedio }}</span>
+          <span class="nota-chip" [ngClass]="promedioClass(a.promedio)" style="margin-left:8px;font-size:12px">
+            {{ a.promedio }}
+          </span>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:12px;color:#718096;font-weight:500">{{ a.notas.length }} evaluaciones</span>
+          <span style="font-size:12px;color:#718096">{{ a.notas.length }} evaluaciones</span>
           <ion-icon name="chevron-down-outline" class="accordion-arrow" [class.open]="isOpen(a.id)"></ion-icon>
         </div>
       </div>
@@ -24,9 +28,9 @@
           <thead><tr><th>Evaluación</th><th>Fecha</th><th>Nota</th></tr></thead>
           <tbody>
             <tr *ngFor="let n of a.notas">
-              <td><strong>{{ n.evalNombre }}</strong></td>
-              <td style="font-size:12px;color:#718096">{{ n.fecha }}</td>
-              <td><span class="nota-chip" [ngClass]="notaClass(n.nota)">{{ n.nota }}</span></td>
+              <td><strong>{{ n.tituloEvaluacion }}</strong></td>
+              <td style="font-size:12px;color:#718096">{{ n.fechaCreacion | date:'dd/MM/yyyy' }}</td>
+              <td><span class="nota-chip" [ngClass]="notaClass(n.valor)">{{ n.valor }}</span></td>
             </tr>
           </tbody>
         </table>

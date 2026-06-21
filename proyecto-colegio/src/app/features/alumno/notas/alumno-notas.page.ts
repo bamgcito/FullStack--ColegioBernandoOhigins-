@@ -1,4 +1,4 @@
-﻿import { Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonContent, IonIcon } from '@ionic/angular/standalone';
 import { LayoutComponent } from '../../../shared/components/layout/layout.component';
@@ -16,38 +16,47 @@ import { ApiService } from '../../../core/services/api.service';
 })
 export class AlumnoNotasPage implements OnInit {
   promedio = 0;
-  asignaturas: any[] = [];
-  openIds: Set<number> = new Set();
+  totalNotas = 0;
+  asignaturas: { id: number; nombre: string; notas: any[]; promedio: number }[] = [];
+  openIds = new Set<number>();
 
   constructor(private auth: AuthService, private api: ApiService) {
     addIcons({ bookOutline, statsChartOutline, documentTextOutline, chevronDownOutline });
   }
 
   ngOnInit() {
-    const rut = this.auth.currentUser?.rut ?? '';
-    if (!rut) return;
-
-    this.api.getNotasAlumno(rut).subscribe({
+    const uid = this.auth.currentUser?.id ?? 0;
+    if (!uid) return;
+    this.api.getNotasAlumno(uid).subscribe({
       next: notas => {
-        this.api.getPromedioAlumno(rut).subscribe({
-          next: p => { this.promedio = typeof p === 'number' ? p : p?.promedioGeneral ?? 0; }
-        });
-        const mapa: Record<number, any> = {};
+        this.totalNotas = notas.length;
+
+        const mapa: Record<number, { id: number; nombre: string; notas: any[]; promedio: number }> = {};
         notas.forEach((n: any) => {
-          const aid = n.asignacionId || n.asignacionDocenteId || 0;
-          if (!mapa[aid]) mapa[aid] = { id: aid, nombre: n.nombreAsignatura || n.asignatura || `Asig. ${aid}`, notas: [] };
+          const aid = n.asignacionId || 0;
+          if (!mapa[aid]) {
+            mapa[aid] = { id: aid, nombre: n.nombreAsignatura || 'Sin asignatura', notas: [], promedio: 0 };
+          }
           mapa[aid].notas.push(n);
         });
-        this.asignaturas = Object.values(mapa).map((a: any) => ({
-          ...a,
-          promedio: Math.round((a.notas.reduce((s: number, n: any) => s + (n.nota || 0), 0) / a.notas.length) * 10) / 10
-        }));
-        if (this.asignaturas.length > 0) this.openIds.add(this.asignaturas[0].id);
+
+        this.asignaturas = Object.values(mapa).map(a => {
+          const suma = a.notas.reduce((s, n) => s + (n.valor || 0), 0);
+          return { ...a, promedio: Math.round((suma / a.notas.length) * 10) / 10 };
+        });
+
+        if (this.asignaturas.length > 0) {
+          const sumaPromedios = this.asignaturas.reduce((s, a) => s + a.promedio, 0);
+          this.promedio = Math.round((sumaPromedios / this.asignaturas.length) * 10) / 10;
+          this.openIds.add(this.asignaturas[0].id);
+        }
       }
     });
   }
 
   toggle(id: number) { this.openIds.has(id) ? this.openIds.delete(id) : this.openIds.add(id); }
   isOpen(id: number) { return this.openIds.has(id); }
+
   notaClass(n: number) { if (n >= 6) return 'excelente'; if (n >= 5) return 'buena'; if (n >= 4) return 'suficiente'; return 'reprobado'; }
+  promedioClass(n: number) { if (n >= 6) return 'excelente'; if (n >= 5) return 'buena'; if (n >= 4) return 'suficiente'; return n === 0 ? '' : 'reprobado'; }
 }

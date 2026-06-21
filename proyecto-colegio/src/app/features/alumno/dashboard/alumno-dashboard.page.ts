@@ -31,29 +31,36 @@ export class AlumnoDashboardPage implements OnInit {
   }
 
   ngOnInit() {
-    const rut = this.auth.currentUser?.rut ?? '';
+    const uid = this.auth.currentUser?.id ?? 0;
     this.alumno = this.auth.currentUser;
-    if (!rut) return;
+    if (!uid) return;
 
     forkJoin({
-      notas: this.api.getNotasAlumno(rut).pipe(catchError(() => of([]))),
-      asistencia: this.api.getAsistenciaAlumno(rut).pipe(catchError(() => of([]))),
-      anotaciones: this.api.getAnotacionesAlumno(rut).pipe(catchError(() => of([]))),
-      promedio: this.api.getPromedioAlumno(rut).pipe(catchError(() => of(null))),
-      cursos: this.api.getCursos().pipe(catchError(() => of([])))
+      notas: this.api.getNotasAlumno(uid).pipe(catchError(() => of([]))),
+      asistencia: this.api.getAsistenciaAlumno(uid).pipe(catchError(() => of([]))),
+      anotaciones: this.api.getAnotacionesAlumno(uid).pipe(catchError(() => of([]))),
+      promedio: this.api.getPromedioAlumno(uid).pipe(catchError(() => of(null))),
+      curso: this.api.getCursoDeAlumno(uid).pipe(catchError(() => of(null)))
     }).subscribe({
-      next: ({ notas, asistencia, anotaciones, promedio, cursos }) => {
+      next: ({ notas, asistencia, anotaciones, promedio, curso }) => {
         this.totalNotas = notas.length;
         this.ultimasNotas = notas.slice(0, 4);
-        this.promedio = typeof promedio === 'number' ? promedio : (promedio?.promedioGeneral ?? 0);
+        const mapa: Record<number, number[]> = {};
+        notas.forEach((n: any) => {
+          const aid = n.asignacionId || 0;
+          if (!mapa[aid]) mapa[aid] = [];
+          mapa[aid].push(n.valor || 0);
+        });
+        const promedios = Object.values(mapa).map(vals => vals.reduce((s, v) => s + v, 0) / vals.length);
+        this.promedio = promedios.length
+          ? Math.round(promedios.reduce((s, p) => s + p, 0) / promedios.length * 10) / 10 : 0;
         this.asistencia = asistencia.length
           ? Math.round(asistencia.filter((r: any) => r.estado !== 'AUSENTE').length / asistencia.length * 100)
           : 0;
         this.anotaciones = anotaciones.slice(0, 3);
-        const miCurso = cursos.find((c: any) => c.alumnos?.some((a: any) => a.rut === rut));
-        if (miCurso) {
-          this.cursoLabel = `${miCurso.nivel}${miCurso.letra}`;
-          this.profeJefeNombre = miCurso.nombreProfesorJefe || 'Sin asignar';
+        if (curso) {
+          this.cursoLabel = `${curso.nivel}${curso.letra}`;
+          this.profeJefeNombre = curso.nombreProfesorJefe || 'Sin asignar';
         }
       }
     });

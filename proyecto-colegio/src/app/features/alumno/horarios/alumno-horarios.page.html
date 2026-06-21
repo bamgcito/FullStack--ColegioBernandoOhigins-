@@ -1,0 +1,31 @@
+<app-layout pageTitle="Mi Horario">
+  <div class="animate-in">
+    <div *ngIf="loading" style="text-align:center;padding:48px;color:#718096">Cargando horario...</div>
+
+    <ng-container *ngIf="!loading">
+      <ng-container *ngFor="let dia of dias">
+        <div class="content-card" style="margin-bottom:12px" *ngIf="porDia(dia).length">
+          <div class="content-card-header">
+            <span class="content-card-title">{{ dia }}</span>
+            <span class="badge badge-info">{{ porDia(dia).length }} bloque(s)</span>
+          </div>
+          <table class="data-table">
+            <thead><tr><th>Bloque</th><th>Horario</th><th>Asignatura</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let h of porDia(dia)">
+                <td><strong>Bloque {{ h.bloque }}</strong></td>
+                <td style="font-size:12px;color:#718096">{{ h.horaInicio }} – {{ h.horaFin }}</td>
+                <td>{{ h.nombreAsignatura || '—' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+
+      <div *ngIf="!horarios.length" class="content-card" style="text-align:center;padding:48px;color:#718096">
+        <ion-icon name="calendar-outline" style="font-size:40px;display:block;margin:0 auto 12px"></ion-icon>
+        Sin horario registrado para tu curso
+      </div>
+    </ng-container>
+  </div>
+</app-layout>

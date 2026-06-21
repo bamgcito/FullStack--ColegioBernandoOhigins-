@@ -6,12 +6,19 @@
       <div class="kpi-card"><div class="kpi-icon red"><ion-icon name="close-outline"></ion-icon></div><div><div class="kpi-value">{{ ausentes }}</div><div class="kpi-label">Ausencias</div></div></div>
       <div class="kpi-card"><div class="kpi-icon orange"><ion-icon name="time-outline"></ion-icon></div><div><div class="kpi-value">{{ atrasados }}</div><div class="kpi-label">Atrasos</div></div></div>
     </div>
+
+    <div *ngIf="asignaturas.length === 0" class="content-card" style="text-align:center;color:#718096;padding:40px">
+      Sin asignaturas asignadas al curso
+    </div>
+
     <div class="accordion-item" *ngFor="let a of asignaturas">
       <div class="accordion-header" [class.open]="isOpen(a.id)" (click)="toggle(a.id)">
         <div style="display:flex;align-items:center;gap:10px">
           <ion-icon name="book-outline" style="color:#1E3A5F;font-size:16px"></ion-icon>
           <span>{{ a.nombre }}</span>
-          <span class="badge badge-info" style="margin-left:8px">{{ pct(a.registros) }}%</span>
+          <span class="badge badge-info" style="margin-left:8px">
+            {{ a.registros.length ? (pct(a.registros) + '%') : 'Sin registros' }}
+          </span>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
           <span style="font-size:12px;color:#718096">{{ a.registros.length }} registros</span>
@@ -19,7 +26,10 @@
         </div>
       </div>
       <div class="accordion-body" *ngIf="isOpen(a.id)">
-        <table class="data-table">
+        <div *ngIf="a.registros.length === 0" style="text-align:center;color:#718096;padding:20px 0">
+          Sin registros de asistencia aún
+        </div>
+        <table class="data-table" *ngIf="a.registros.length > 0">
           <thead><tr><th>Fecha</th><th>Estado</th></tr></thead>
           <tbody>
             <tr *ngFor="let r of a.registros">

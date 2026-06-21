@@ -13,7 +13,7 @@
           <tr *ngFor="let a of anotaciones">
             <td><span class="badge" [ngClass]="badge(a.tipo)">{{ a.tipo }}</span></td>
             <td>{{ a.descripcion }}</td>
-            <td style="font-size:12px;color:#718096">{{ a.fecha }}</td>
+            <td style="font-size:12px;color:#718096">{{ a.fechaCreacion | date:'dd/MM/yyyy' }}</td>
           </tr>
           <tr *ngIf="anotaciones.length===0">
             <td colspan="3" style="text-align:center;padding:20px;color:#718096">Sin anotaciones</td>

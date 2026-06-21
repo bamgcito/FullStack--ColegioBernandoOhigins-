@@ -31,9 +31,9 @@
           <thead><tr><th>Asignatura</th><th>Evaluación</th><th>Nota</th></tr></thead>
           <tbody>
             <tr *ngFor="let n of ultimasNotas">
-              <td>{{ n.asignatura }}</td>
-              <td>{{ n.evalNombre }}</td>
-              <td><span class="nota-chip" [ngClass]="notaClass(n.nota)">{{ n.nota }}</span></td>
+              <td>{{ n.nombreAsignatura || '—' }}</td>
+              <td>{{ n.tituloEvaluacion }}</td>
+              <td><span class="nota-chip" [ngClass]="notaClass(n.valor)">{{ n.valor }}</span></td>
             </tr>
             <tr *ngIf="ultimasNotas.length===0">
               <td colspan="3" style="text-align:center;padding:20px;color:#718096">Sin notas aún</td>
@@ -52,7 +52,7 @@
             <tr *ngFor="let a of anotaciones">
               <td><span class="badge" [ngClass]="badgeAnotacion(a.tipo)">{{ a.tipo }}</span></td>
               <td style="font-size:12px">{{ a.descripcion }}</td>
-              <td style="font-size:12px;color:#718096">{{ a.fecha }}</td>
+              <td style="font-size:12px;color:#718096">{{ a.fechaCreacion | date:'dd/MM/yyyy' }}</td>
             </tr>
             <tr *ngIf="anotaciones.length===0">
               <td colspan="3" style="text-align:center;padding:20px;color:#718096">Sin anotaciones</td>

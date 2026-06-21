@@ -19,9 +19,9 @@ export class AlumnoAnotacionesPage implements OnInit {
   constructor(private auth: AuthService, private api: ApiService) { addIcons({ pencilOutline }); }
 
   ngOnInit() {
-    const rut = this.auth.currentUser?.rut ?? '';
-    if (!rut) return;
-    this.api.getAnotacionesAlumno(rut).subscribe({ next: data => { this.anotaciones = data; } });
+    const uid = this.auth.currentUser?.id ?? 0;
+    if (!uid) return;
+    this.api.getAnotacionesAlumno(uid).subscribe({ next: data => { this.anotaciones = data; } });
   }
 
   badge(t: string) { return { POSITIVA: 'badge-success', NEGATIVA: 'badge-danger', NEUTRA: 'badge-neutral' }[t] || 'badge-neutral'; }
