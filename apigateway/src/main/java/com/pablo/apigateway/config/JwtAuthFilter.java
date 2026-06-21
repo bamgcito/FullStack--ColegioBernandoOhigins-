@@ -30,7 +30,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         // Dejar pasar el login sin token
         String path = request.getRequestURI();
-        if (path.contains("/auth/login")) {
+        if (path.equals("/bff/auth/login") || path.equals("/bff/ms/auth/login")) {
             filterChain.doFilter(request, response);
             return;
         }
