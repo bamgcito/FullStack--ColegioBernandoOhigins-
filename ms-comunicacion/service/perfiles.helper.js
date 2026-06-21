@@ -1,4 +1,4 @@
-const MS_PERFILES = 'http://ms-perfiles:8087';
+const MS_PERFILES = 'http://ms-perfiles:8083';
 
 async function obtenerNombrePerfil(tipo, id, token) {
     let endpoint;

@@ -1,8 +1,8 @@
 const { pool } = require('../database/mysql');
 const { obtenerNombrePerfil, MS_PERFILES } = require('./perfiles.helper');
 
-const MS_CURSOS = 'http://ms-cursos:8088';
-const MS_ASIGNATURAS = 'http://ms-asignatura:8089';
+const MS_CURSOS = 'http://ms-cursos:8084';
+const MS_ASIGNATURAS = 'http://ms-asignatura:8085';
 
 async function obtenerPerfilAlumnoPorUsuario(usuarioId, token) {
     let response;
