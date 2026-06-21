@@ -46,7 +46,7 @@ services:
       context: ./authservice
     container_name: auth-service
     ports:
-      - "8094:8094"
+      - "8081:8081"
     environment:
       SPRING_PROFILES_ACTIVE: docker
     networks:
@@ -61,7 +61,7 @@ services:
       context: ./ms-usuarios
     container_name: ms-usuarios
     ports:
-      - "8086:8086"
+      - "8082:8082"
     environment:
       SPRING_PROFILES_ACTIVE: docker
     networks:
@@ -78,7 +78,7 @@ services:
       context: ./ms-perfiles
     container_name: ms-perfiles
     ports:
-      - "8087:8087"
+      - "8083:8083"
     environment:
       SPRING_PROFILES_ACTIVE: docker
     networks:
@@ -95,7 +95,7 @@ services:
       context: ./ms-cursos
     container_name: ms-cursos
     ports:
-      - "8088:8088"
+      - "8084:8084"
     environment:
       SPRING_PROFILES_ACTIVE: docker
     networks:
@@ -112,7 +112,7 @@ services:
       context: ./ms-asignatura
     container_name: ms-asignatura
     ports:
-      - "8089:8089"
+      - "8085:8085"
     environment:
       SPRING_PROFILES_ACTIVE: docker
     networks:
@@ -129,7 +129,7 @@ services:
       context: ./ms-evaluaciones
     container_name: ms-evaluaciones
     ports:
-      - "8091:8091"
+      - "8086:8086"
     environment:
       SPRING_PROFILES_ACTIVE: docker
     networks:
@@ -146,7 +146,7 @@ services:
       context: ./ms-notas
     container_name: ms-notas
     ports:
-      - "8092:8092"
+      - "8087:8087"
     environment:
       SPRING_PROFILES_ACTIVE: docker
     networks:
@@ -163,7 +163,24 @@ services:
       context: ./ms-asistencia
     container_name: ms-asistencia
     ports:
-      - "8093:8093"
+      - "8088:8088"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    networks:
+      - colegio-net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    restart: unless-stopped
+
+  ms-horarios:
+    build:
+      context: ./ms-horarios
+    container_name: ms-horarios
+    ports:
+      - "8089:8089"
     environment:
       SPRING_PROFILES_ACTIVE: docker
     networks:
@@ -200,7 +217,7 @@ services:
       context: ./BFF_original/BFF
     container_name: bff
     ports:
-      - "8085:8085"
+      - "8091:8091"
     environment:
       SPRING_PROFILES_ACTIVE: docker
     networks:
