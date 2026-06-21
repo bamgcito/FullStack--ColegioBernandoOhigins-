@@ -25,6 +25,7 @@ export const routes: Routes = [
   { path: 'admin/notas',        canActivate: [guard(['ADMIN'])], loadComponent: () => import('./features/admin/notas/admin-notas.page').then(m => m.AdminNotasPage) },
   { path: 'admin/asistencia',   canActivate: [guard(['ADMIN'])], loadComponent: () => import('./features/admin/asistencia/admin-asistencia.page').then(m => m.AdminAsistenciaPage) },
   { path: 'admin/anotaciones',  canActivate: [guard(['ADMIN'])], loadComponent: () => import('./features/admin/anotaciones/admin-anotaciones.page').then(m => m.AdminAnotacionesPage) },
+  { path: 'admin/horarios',     canActivate: [guard(['ADMIN'])], loadComponent: () => import('./features/admin/horarios/admin-horarios.page').then(m => m.AdminHorariosPage) },
   { path: 'admin/comunicaciones', canActivate: [guard(['ADMIN'])], loadComponent: () => import('./features/shared-pages/comunicaciones/comunicaciones.page').then(m => m.ComunicacionesPage) },
 
   { path: 'profesor/dashboard',    canActivate: [guard(['PROFESOR'])], loadComponent: () => import('./features/profesor/dashboard/profesor-dashboard.page').then(m => m.ProfesorDashboardPage) },
@@ -33,18 +34,21 @@ export const routes: Routes = [
   { path: 'profesor/evaluaciones',  canActivate: [guard(['PROFESOR'])], loadComponent: () => import('./features/profesor/evaluaciones/profesor-evaluaciones.page').then(m => m.ProfesorEvaluacionesPage) },
   { path: 'profesor/notas',        canActivate: [guard(['PROFESOR'])], loadComponent: () => import('./features/profesor/notas/profesor-notas.page').then(m => m.ProfesorNotasPage) },
   { path: 'profesor/anotaciones',  canActivate: [guard(['PROFESOR'])], loadComponent: () => import('./features/profesor/anotaciones/profesor-anotaciones.page').then(m => m.ProfesorAnotacionesPage) },
+  { path: 'profesor/horarios',     canActivate: [guard(['PROFESOR'])], loadComponent: () => import('./features/profesor/horarios/profesor-horarios.page').then(m => m.ProfesorHorariosPage) },
   { path: 'profesor/comunicaciones', canActivate: [guard(['PROFESOR'])], loadComponent: () => import('./features/shared-pages/comunicaciones/comunicaciones.page').then(m => m.ComunicacionesPage) },
 
   { path: 'alumno/dashboard',    canActivate: [guard(['ALUMNO'])], loadComponent: () => import('./features/alumno/dashboard/alumno-dashboard.page').then(m => m.AlumnoDashboardPage) },
   { path: 'alumno/notas',        canActivate: [guard(['ALUMNO'])], loadComponent: () => import('./features/alumno/notas/alumno-notas.page').then(m => m.AlumnoNotasPage) },
   { path: 'alumno/asistencia',   canActivate: [guard(['ALUMNO'])], loadComponent: () => import('./features/alumno/asistencia/alumno-asistencia.page').then(m => m.AlumnoAsistenciaPage) },
   { path: 'alumno/anotaciones',  canActivate: [guard(['ALUMNO'])], loadComponent: () => import('./features/alumno/anotaciones/alumno-anotaciones.page').then(m => m.AlumnoAnotacionesPage) },
+  { path: 'alumno/horarios',     canActivate: [guard(['ALUMNO'])], loadComponent: () => import('./features/alumno/horarios/alumno-horarios.page').then(m => m.AlumnoHorariosPage) },
   { path: 'alumno/comunicaciones', canActivate: [guard(['ALUMNO'])], loadComponent: () => import('./features/shared-pages/comunicaciones/comunicaciones.page').then(m => m.ComunicacionesPage) },
 
   { path: 'apoderado/dashboard',   canActivate: [guard(['APODERADO'])], loadComponent: () => import('./features/apoderado/dashboard/apoderado-dashboard.page').then(m => m.ApoderadoDashboardPage) },
   { path: 'apoderado/notas',       canActivate: [guard(['APODERADO'])], loadComponent: () => import('./features/apoderado/notas/apoderado-notas.page').then(m => m.ApoderadoNotasPage) },
   { path: 'apoderado/asistencia',  canActivate: [guard(['APODERADO'])], loadComponent: () => import('./features/apoderado/asistencia/apoderado-asistencia.page').then(m => m.ApoderadoAsistenciaPage) },
   { path: 'apoderado/anotaciones', canActivate: [guard(['APODERADO'])], loadComponent: () => import('./features/apoderado/anotaciones/apoderado-anotaciones.page').then(m => m.ApoderadoAnotacionesPage) },
+  { path: 'apoderado/horarios',    canActivate: [guard(['APODERADO'])], loadComponent: () => import('./features/apoderado/horarios/apoderado-horarios.page').then(m => m.ApoderadoHorariosPage) },
   { path: 'apoderado/comunicaciones', canActivate: [guard(['APODERADO'])], loadComponent: () => import('./features/shared-pages/comunicaciones/comunicaciones.page').then(m => m.ComunicacionesPage) },
 
   { path: '**', redirectTo: '' }

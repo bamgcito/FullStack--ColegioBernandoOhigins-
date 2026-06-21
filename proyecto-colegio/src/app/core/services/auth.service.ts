@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, map, catchError, of } from 'rxjs';
+import { BehaviorSubject, Observable, switchMap, map, catchError, of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 
@@ -33,29 +33,52 @@ export class AuthService {
 
   login(rut: string, password: string): Observable<{ success: boolean; message: string }> {
     return this.http.post<any>(
-      `${environment.apiUrl}/bff/auth/login`, { rut, contrasena: password }
+      `${environment.apiUrl}/bff/ms/auth/login`, { rut, contrasena: password }
     ).pipe(
-      map(response => {
+      switchMap(loginResp => {
+        const perfilUrl = this.urlPerfilPorRol(loginResp.nombreRol, loginResp.id);
+        if (!perfilUrl) return of({ loginResp, perfil: null as any });
+        return this.http.get<any>(
+          perfilUrl,
+          { headers: { Authorization: `Bearer ${loginResp.token}` } }
+        ).pipe(
+          map(perfil => ({ loginResp, perfil })),
+          catchError(() => of({ loginResp, perfil: null as any }))
+        );
+      }),
+      map(({ loginResp, perfil }) => {
         const authUser: AuthUser = {
-          id: response.id,
-          rut: response.rut,
-          nombre: response.nombre,
-          apellido: response.apellido,
-          rol: response.nombreRol,
-          token: response.token
+          id: loginResp.id,
+          rut: loginResp.rut,
+          nombre: perfil?.nombre || (loginResp.nombreRol === 'ADMIN' ? 'Administrador' : ''),
+          apellido: perfil?.apellido || '',
+          rol: loginResp.nombreRol,
+          token: loginResp.token
         };
         localStorage.setItem('auth_user', JSON.stringify(authUser));
         this.currentUserSubject.next(authUser);
         return { success: true, message: 'OK' };
       }),
       catchError(error => {
-        return of({ success: false, message: error.error?.message || 'RUT o contraseña incorrectos' });
+        return of({ success: false, message: error.error?.error || 'RUT o contraseña incorrectos' });
       })
     );
   }
 
+  private urlPerfilPorRol(rol: string, usuarioId: number): string | null {
+    switch (rol) {
+      case 'PROFESOR': return `${environment.apiUrl}/bff/ms/perfiles/profesores/${usuarioId}`;
+      case 'ALUMNO': return `${environment.apiUrl}/bff/ms/perfiles/alumnos/${usuarioId}`;
+      case 'APODERADO': return `${environment.apiUrl}/bff/ms/perfiles/apoderados/${usuarioId}`;
+      default: return null;
+    }
+  }
+
   logout(): void {
+    const uid = this.currentUserSubject.value?.id;
     localStorage.removeItem('auth_user');
+    localStorage.removeItem('apoderado_pupilo');
+    if (uid) localStorage.removeItem(`notif_descartadas_${uid}`);
     this.currentUserSubject.next(null);
     this.router.navigate(['/login'], { replaceUrl: true });
   }
