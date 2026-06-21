@@ -10,6 +10,7 @@ public class ProfesorDTO {
     private String rut;
     private String nombre;
     private String apellido;
+    private String especialidad;
     private LocalDateTime fechaCreacion;
 
     public ProfesorDTO() {}
@@ -21,6 +22,7 @@ public class ProfesorDTO {
         dto.setRut(p.getRut());
         dto.setNombre(p.getNombre());
         dto.setApellido(p.getApellido());
+        dto.setEspecialidad(p.getEspecialidad());
         dto.setFechaCreacion(p.getFechaCreacion());
         return dto;
     }
@@ -39,6 +41,9 @@ public class ProfesorDTO {
 
     public String getApellido() { return apellido; }
     public void setApellido(String apellido) { this.apellido = apellido; }
+
+    public String getEspecialidad() { return especialidad; }
+    public void setEspecialidad(String especialidad) { this.especialidad = especialidad; }
 
     public LocalDateTime getFechaCreacion() { return fechaCreacion; }
     public void setFechaCreacion(LocalDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }

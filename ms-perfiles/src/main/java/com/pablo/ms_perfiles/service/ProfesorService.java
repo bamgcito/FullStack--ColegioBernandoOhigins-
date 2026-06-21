@@ -48,6 +48,7 @@ public class ProfesorService {
         profesor.setRut(solicitud.getRut());
         profesor.setNombre(solicitud.getNombre());
         profesor.setApellido(solicitud.getApellido());
+        profesor.setEspecialidad(solicitud.getEspecialidad());
         profesorRepository.save(profesor);
 
         return ResponseEntity.ok(Map.of("mensaje", "Perfil de profesor creado exitosamente para el RUT: " + solicitud.getRut()));
