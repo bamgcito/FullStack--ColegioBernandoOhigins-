@@ -7,14 +7,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/bff/auth")
-public class AuthController {
+@RequestMapping("/bff/ms")
+public class MsAuthController {
 
     @Autowired
     private MicroservicioService ms;
 
-    @PostMapping("/login")
-    public ResponseEntity<Object> login(@RequestBody Map<String, String> body) {
-        return ms.post(ms.urlUsuarios(), "/usuarios/login", body, null);
+    @PostMapping("/auth/login")
+    public ResponseEntity<Object> login(@RequestBody Map<String, Object> body) {
+        return ms.post(ms.urlMsAuth(), "/auth/login", body, null);
     }
 }
