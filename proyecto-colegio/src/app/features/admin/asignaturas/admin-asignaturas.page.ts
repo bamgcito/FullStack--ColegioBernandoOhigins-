@@ -34,7 +34,7 @@ export class AdminAsignaturasPage implements OnInit {
 
   crear() {
     if (!this.nuevoNombre) return;
-    this.api.crearAsignatura({ nombre: this.nuevoNombre }, 'text').subscribe({
+    this.api.crearAsignatura({ nombre: this.nuevoNombre }).subscribe({
       next: () => { this.showModal = false; this.nuevoNombre = ''; this.cargar(); },
       error: () => { }
     });

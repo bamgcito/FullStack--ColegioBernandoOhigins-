@@ -36,7 +36,7 @@ export class AdminAsignacionesPage implements OnInit {
         this.asignaturasList = asignaturas;
         const profUsers = usuarios.filter((u: any) => (u.nombreRol || u.rol) === 'PROFESOR');
         if (profUsers.length) {
-          forkJoin(profUsers.map((u: any) => this.api.getProfesorPorId(u.id))).subscribe({
+          forkJoin(profUsers.map((u: any) => this.api.getPerfilProfesor(u.id))).subscribe({
             next: perfiles => {
               this.profesores = perfiles.filter(Boolean);
               perfiles.forEach((p: any, i: number) => {

@@ -25,7 +25,7 @@ export class AdminEvaluacionesPage implements OnInit {
   showModal = false;
   errorMsg = '';
   exitoMsg = '';
-  nueva = { nombre: '', fecha: new Date().toISOString().split('T')[0], descripcion: '' };
+  nueva = { titulo: '', descripcion: '' };
 
   constructor(private api: ApiService) { addIcons({ documentTextOutline, addOutline, closeOutline }); }
 
@@ -64,18 +64,18 @@ export class AdminEvaluacionesPage implements OnInit {
 
   abrirModal() {
     this.errorMsg = '';
-    this.nueva = { nombre: '', fecha: new Date().toISOString().split('T')[0], descripcion: '' };
+    this.nueva = { titulo: '', descripcion: '' };
     this.showModal = true;
   }
 
   crear() {
-    if (!this.nueva.nombre || !this.asignacionId) return;
+    if (!this.nueva.titulo || !this.asignacionId) return;
     this.errorMsg = '';
-    this.api.crearEvaluacion({ ...this.nueva, asignacionDocenteId: +this.asignacionId }).subscribe({
+    this.api.crearEvaluacion({ ...this.nueva, asignacionId: +this.asignacionId }).subscribe({
       next: () => {
         this.showModal = false;
-        this.nueva = { nombre: '', fecha: new Date().toISOString().split('T')[0], descripcion: '' };
         this.exitoMsg = 'Evaluación creada correctamente';
+        this.nueva = { titulo: '', descripcion: '' };
         this.onAsignacion();
       },
       error: (err) => {

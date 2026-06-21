@@ -89,7 +89,7 @@ export class AdminNotasPage implements OnInit {
 
   guardar() {
     const reqs = this.alumnos.filter(al => this.notasReg[al.id] > 0)
-      .map(al => this.api.crearNota({ rutAlumno: al.rut, evaluacionId: +this.evaluacionId, nota: this.notasReg[al.id] }));
+      .map(al => this.api.crearNota({ alumnoId: al.alumnoId, evaluacionId: +this.evaluacionId, valor: this.notasReg[al.id] }));
     if (!reqs.length) { this.guardado = true; return; }
     forkJoin(reqs).subscribe({
       next: () => {

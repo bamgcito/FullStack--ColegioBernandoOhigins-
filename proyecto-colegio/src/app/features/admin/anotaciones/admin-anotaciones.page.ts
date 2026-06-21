@@ -24,10 +24,11 @@ export class AdminAnotacionesPage implements OnInit {
   anotaciones: any[] = [];
   alumnos: any[] = [];
   alumnoNombres: Record<string, string> = {};
+  alumnoMap: Record<number, string> = {};
   showModal = false;
   errorMsg = '';
   exitoMsg = '';
-  nueva = { rutAlumno: '', descripcion: '', tipo: 'POSITIVA', fecha: new Date().toISOString().split('T')[0] };
+  nueva = { alumnoId: 0, descripcion: '', tipo: 'POSITIVA' };
 
   constructor(private api: ApiService) { addIcons({ pencilOutline, addOutline, closeOutline }); }
 
@@ -51,7 +52,11 @@ export class AdminAnotacionesPage implements OnInit {
         }));
         this.alumnos = alumnos;
         this.alumnoNombres = {};
-        alumnos.forEach((al: any) => { this.alumnoNombres[al.rut] = `${al.nombre} ${al.apellido}`; });
+        this.alumnoMap = {};
+        alumnos.forEach((al: any) => {
+          this.alumnoNombres[al.rut] = `${al.nombre} ${al.apellido}`;
+          this.alumnoMap[al.alumnoId] = `${al.nombre} ${al.apellido}`;
+        });
       }
     });
   }
@@ -66,21 +71,22 @@ export class AdminAnotacionesPage implements OnInit {
   }
 
   getAlumno(rut: string) { return this.alumnoNombres[rut] || rut || '—'; }
+  getAlumnoById(id: number) { return this.alumnoMap[id] || `Alumno ${id}`; }
   badge(t: string) { return { POSITIVA: 'badge-success', NEGATIVA: 'badge-danger', NEUTRA: 'badge-neutral' }[t] || 'badge-neutral'; }
 
   abrirModal() {
     this.errorMsg = '';
-    this.nueva = { rutAlumno: '', descripcion: '', tipo: 'POSITIVA', fecha: new Date().toISOString().split('T')[0] };
+    this.nueva = { alumnoId: 0, descripcion: '', tipo: 'POSITIVA' };
     this.showModal = true;
   }
 
   crear() {
-    if (!this.nueva.rutAlumno || !this.nueva.descripcion || !this.asignacionId) return;
+    if (!this.nueva.alumnoId || !this.nueva.descripcion || !this.asignacionId) return;
     this.errorMsg = '';
-    this.api.registrarAnotacion({ ...this.nueva, asignacionDocenteId: +this.asignacionId }).subscribe({
+    this.api.registrarAnotacion({ alumnoId: this.nueva.alumnoId, asignacionId: +this.asignacionId, tipo: this.nueva.tipo, descripcion: this.nueva.descripcion }).subscribe({
       next: () => {
         this.showModal = false;
-        this.nueva = { rutAlumno: '', descripcion: '', tipo: 'POSITIVA', fecha: new Date().toISOString().split('T')[0] };
+        this.nueva = { alumnoId: 0, descripcion: '', tipo: 'POSITIVA' };
         this.exitoMsg = 'Anotación registrada correctamente';
         this.onAsignacion();
       },

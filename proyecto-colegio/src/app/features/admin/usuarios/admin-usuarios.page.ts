@@ -11,7 +11,7 @@ import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 
 const ROL_IDS: Record<string, number> = {
-  ADMIN: 1, ALUMNO: 2, PROFESOR: 3, APODERADO: 4
+  ADMIN: 1, PROFESOR: 2, ALUMNO: 3, APODERADO: 4
 };
 
 @Component({
@@ -70,9 +70,11 @@ export class AdminUsuariosPage implements OnInit {
         this.loading = false;
         const alumnoUsers = data.filter((u: any) => (u.nombreRol || u.rol) === 'ALUMNO');
         const profUsers = data.filter((u: any) => (u.nombreRol || u.rol) === 'PROFESOR');
+        const apoderadoUsers = data.filter((u: any) => (u.nombreRol || u.rol) === 'APODERADO');
         const calls = [
-          ...alumnoUsers.map((u: any) => this.api.getAlumnoPorId(u.id).pipe(catchError(() => of(null)))),
-          ...profUsers.map((u: any) => this.api.getProfesorPorId(u.id).pipe(catchError(() => of(null))))
+          ...alumnoUsers.map((u: any) => this.api.getPerfilAlumno(u.id).pipe(catchError(() => of(null)))),
+          ...profUsers.map((u: any) => this.api.getPerfilProfesor(u.id).pipe(catchError(() => of(null)))),
+          ...apoderadoUsers.map((u: any) => this.api.getPerfilApoderado(u.id).pipe(catchError(() => of(null))))
         ];
         if (!calls.length) return;
         forkJoin(calls).subscribe({
@@ -124,7 +126,7 @@ export class AdminUsuariosPage implements OnInit {
     const rut = this.nuevo.rut.trim().toUpperCase();
     const rolId = ROL_IDS[this.nuevo.rol] ?? 3;
 
-    this.api.crearUsuario({ rut, contrasena: this.nuevo.password, rolId }, 'text').subscribe({
+    this.api.crearUsuario({ rut, contrasena: this.nuevo.password, rolId }).subscribe({
       next: (resp: any) => {
         this.loadingPaso1 = false;
         const msg = this.parseMensaje(resp);
@@ -168,9 +170,9 @@ export class AdminUsuariosPage implements OnInit {
         ? { ...base, especialidad: this.nuevo.especialidad?.trim() || null, correoInstitucional: this.nuevo.correoInstitucional?.trim() || null, telefono: this.nuevo.telefono?.trim() || null, fechaNacimiento: this.nuevo.fechaNacimiento || null, fechaContrato: this.nuevo.fechaContrato || null }
         : { ...base, telefono: this.nuevo.telefono?.trim() || null, correo: this.nuevo.correo?.trim() || null, parentesco: this.nuevo.parentesco?.trim() || null, telefonoEmergencia: this.nuevo.telefonoEmergencia?.trim() || null, direccion: this.nuevo.direccion?.trim() || null, fechaNacimiento: this.nuevo.fechaNacimiento || null };
 
-    const perfil$ = this.nuevo.rol === 'ALUMNO' ? this.api.crearAlumno(perfil, 'text')
-      : this.nuevo.rol === 'PROFESOR' ? this.api.crearProfesor(perfil, 'text')
-        : this.api.crearApoderado(perfil, 'text');
+    const perfil$ = this.nuevo.rol === 'ALUMNO' ? this.api.crearPerfilAlumno(perfil)
+      : this.nuevo.rol === 'PROFESOR' ? this.api.crearPerfilProfesor(perfil)
+        : this.api.crearPerfilApoderado(perfil);
 
     perfil$.subscribe({
       next: () => {
@@ -238,7 +240,7 @@ export class AdminUsuariosPage implements OnInit {
       esPrincipal: this.asociacion.esPrincipal
     };
 
-    this.api.asociarApoderado(payload, 'text').subscribe({
+    this.api.asociarAlumnoApoderado(payload).subscribe({
       next: (resp: any) => {
         this.loadingAsociacion = false;
         const msg = this.parseMensaje(resp);
@@ -277,9 +279,20 @@ export class AdminUsuariosPage implements OnInit {
     if (!confirm('¿Estás seguro de eliminar este usuario?')) return;
     this.exitoMsg = '';
     this.errorMsg = '';
-    this.api.eliminarUsuario(id).subscribe({
+    const usuario = this.usuarios.find(u => u.id === id);
+    const rol = (usuario?.nombreRol || usuario?.rol || '').toUpperCase();
+    const perfil$ = rol === 'ALUMNO' ? this.api.eliminarPerfilAlumno(id)
+      : rol === 'PROFESOR' ? this.api.eliminarPerfilProfesor(id)
+      : rol === 'APODERADO' ? this.api.eliminarPerfilApoderado(id)
+      : null;
+    const borrar = () => this.api.eliminarUsuario(id).subscribe({
       next: () => { this.exitoMsg = 'Usuario eliminado correctamente'; this.cargar(); },
       error: () => { this.errorMsg = 'Error al eliminar el usuario. Intenta nuevamente.'; }
     });
+    if (perfil$) {
+      perfil$.pipe(catchError(() => of(null))).subscribe(() => borrar());
+    } else {
+      borrar();
+    }
   }
 }

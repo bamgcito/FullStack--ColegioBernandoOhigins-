@@ -51,7 +51,7 @@ export class AdminCursosPage implements OnInit {
         this.loading = false;
         const profUsers = usuarios.filter((u: any) => (u.nombreRol || u.rol) === 'PROFESOR');
         if (!profUsers.length) return;
-        forkJoin(profUsers.map((u: any) => this.api.getProfesorPorId(u.id))).subscribe({
+        forkJoin(profUsers.map((u: any) => this.api.getPerfilProfesor(u.id))).subscribe({
           next: perfiles => { this.profesores = perfiles.filter(Boolean); }
         });
       },
@@ -112,8 +112,12 @@ export class AdminCursosPage implements OnInit {
   // --- Modal: Ver lista de alumnos ---
   abrirListaAlumnos(curso: any) {
     this.cursoSel = curso;
-    this.listaAlumnosSel = curso.alumnos || [];
+    this.listaAlumnosSel = [];
     this.showModalListaAlumnos = true;
+    this.api.getAlumnosDeCurso(curso.id).subscribe({
+      next: (alumnos) => { this.listaAlumnosSel = alumnos; },
+      error: () => {}
+    });
   }
 
   // --- Modal: Asignar alumno a curso ---
@@ -128,9 +132,8 @@ export class AdminCursosPage implements OnInit {
   asignarAlumno() {
     if (!this.rutAlumnoInput.trim()) return;
     this.errorMsgAlumno = '';
-    this.api.asignarAlumnoACurso({
-      alumnoRut: this.rutAlumnoInput.trim().toUpperCase(),
-      cursoId: this.cursoSel.id
+    this.api.asignarAlumnoACurso(this.cursoSel.id, {
+      alumnoRut: this.rutAlumnoInput.trim().toUpperCase()
     }).subscribe({
       next: (resp) => {
         if (resp?.mensaje?.toLowerCase().includes('exitosamente')) {

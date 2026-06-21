@@ -55,7 +55,7 @@
               <td><strong>{{ c.nivel }}{{ c.letra }}</strong></td>
               <td>{{ c.anio }}</td>
               <td>{{ c.nombreProfesorJefe || 'Sin asignar' }}</td>
-              <td><span class="badge badge-info">{{ c.alumnos?.length || 0 }}</span></td>
+              <td><span class="badge badge-info">{{ c.alumnosCount || 0 }}</span></td>
             </tr>
             <tr *ngIf="cursos.length === 0">
               <td colspan="4" style="text-align:center;padding:20px;color:#718096">{{ loading ? 'Cargando...' : 'Sin
@@ -99,9 +99,9 @@
           </thead>
           <tbody>
             <tr *ngFor="let a of anotaciones">
-              <td>{{ getAlumnoByRut(a.rutAlumno) }}</td>
+              <td>{{ getAlumnoById(a.alumnoId) }}</td>
               <td><span class="badge" [ngClass]="badgeAnotacion(a.tipo)">{{ a.tipo }}</span></td>
-              <td style="font-size:12px;color:#718096">{{ a.fecha }}</td>
+              <td style="font-size:12px;color:#718096">{{ a.fechaCreacion | date:'dd/MM/yyyy' }}</td>
             </tr>
             <tr *ngIf="anotaciones.length === 0">
               <td colspan="3" style="text-align:center;padding:20px;color:#718096">Sin anotaciones</td>

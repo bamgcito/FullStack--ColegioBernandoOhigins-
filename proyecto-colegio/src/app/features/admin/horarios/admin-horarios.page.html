@@ -1,0 +1,104 @@
+<app-layout pageTitle="Horarios">
+  <div class="animate-in">
+    <div *ngIf="exitoMsg" style="background:#f0fff4;border:1px solid #c6f6d5;color:#2F855A;padding:10px 16px;border-radius:8px;margin-bottom:16px;font-weight:600;font-size:13px">{{ exitoMsg }}</div>
+
+    <div class="page-actions">
+      <div></div>
+      <button class="btn-primary" (click)="abrirModal()" [disabled]="!cursoId">
+        <ion-icon name="add-outline"></ion-icon> Nuevo Horario
+      </button>
+    </div>
+
+    <div class="content-card" style="margin-bottom:16px">
+      <div class="content-card-header"><span class="content-card-title">Seleccionar Curso</span></div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Curso</label>
+        <select class="form-select" [(ngModel)]="cursoId" (ngModelChange)="onCurso()">
+          <option [ngValue]="0">— Seleccionar —</option>
+          <option *ngFor="let c of cursos" [ngValue]="c.id">{{ c.nivel }}{{ c.letra }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="content-card">
+      <div class="content-card-header">
+        <span class="content-card-title">Horario Semanal</span>
+        <span class="badge badge-info">{{ horarios.length }} bloques</span>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr><th>Día</th><th>Bloque</th><th>Horario</th><th>Asignatura</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!horarios.length">
+            <td colspan="5" style="text-align:center;padding:32px;color:#718096">
+              {{ cursoId ? 'Sin horarios registrados para este curso' : 'Selecciona un curso para ver su horario' }}
+            </td>
+          </tr>
+          <tr *ngFor="let h of horarios">
+            <td><strong>{{ h.diaSemana }}</strong></td>
+            <td>Bloque {{ h.bloque }}</td>
+            <td style="font-size:12px;color:#718096">{{ h.horaInicio }} – {{ h.horaFin }}</td>
+            <td>{{ h.nombreAsignatura || '—' }}</td>
+            <td>
+              <button class="btn-icon" (click)="eliminar(h.id)" title="Eliminar" style="color:#E53E3E">
+                <ion-icon name="trash-outline"></ion-icon>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</app-layout>
+
+<div class="modal-overlay" *ngIf="showModal" (click)="showModal=false">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <span class="content-card-title">Nuevo Horario</span>
+      <button class="btn-icon" (click)="showModal=false"><ion-icon name="close-outline"></ion-icon></button>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Asignación Docente *</label>
+      <select class="form-select" [(ngModel)]="nuevo.asignacionDocenteId">
+        <option [ngValue]="0">— Seleccionar —</option>
+        <option *ngFor="let a of asignaciones" [ngValue]="a.id">{{ a.label }}</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Día *</label>
+      <select class="form-select" [(ngModel)]="nuevo.diaSemana">
+        <option value="">— Seleccionar —</option>
+        <option *ngFor="let d of dias" [value]="d">{{ d }}</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Bloque *</label>
+      <input class="form-input" type="number" min="1" max="8" [(ngModel)]="nuevo.bloque">
+    </div>
+
+    <div style="display:flex;gap:12px">
+      <div class="form-group" style="flex:1">
+        <label class="form-label">Hora Inicio *</label>
+        <input class="form-input" type="time" [(ngModel)]="nuevo.horaInicio">
+      </div>
+      <div class="form-group" style="flex:1">
+        <label class="form-label">Hora Fin *</label>
+        <input class="form-input" type="time" [(ngModel)]="nuevo.horaFin">
+      </div>
+    </div>
+
+    <div *ngIf="errorMsg" style="color:#C53030;font-size:12px;margin-bottom:8px;font-weight:600">{{ errorMsg }}</div>
+
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn-secondary" style="flex:1" (click)="showModal=false">Cancelar</button>
+      <button class="btn-primary" style="flex:1;justify-content:center" (click)="crear()"
+        [disabled]="!nuevo.asignacionDocenteId || !nuevo.diaSemana || !nuevo.horaInicio || !nuevo.horaFin">
+        Crear
+      </button>
+    </div>
+  </div>
+</div>

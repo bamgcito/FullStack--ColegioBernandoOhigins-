@@ -83,7 +83,7 @@ export class AdminAsistenciaPage implements OnInit {
     const asig = this.asignaciones.find((a: any) => a.id === +this.asignacionId);
     if (!asig) return;
     forkJoin(this.alumnos.map(al => this.api.registrarAsistencia({
-      rutAlumno: al.rut, asignacionDocenteId: asig.id, fecha: this.fecha, estado: this.asistenciaReg[al.id] || 'PRESENTE'
+      alumnoId: al.alumnoId, asignacionId: asig.id, fecha: this.fecha, estado: this.asistenciaReg[al.id] || 'PRESENTE'
     }))).subscribe({
       next: () => {
         this.guardado = true;

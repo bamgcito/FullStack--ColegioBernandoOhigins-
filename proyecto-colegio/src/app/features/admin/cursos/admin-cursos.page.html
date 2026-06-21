@@ -29,7 +29,7 @@
             <td>{{ c.nombreProfesorJefe || 'Sin asignar' }}</td>
             <td>
               <span class="badge badge-info" style="cursor:pointer" title="Ver lista" (click)="abrirListaAlumnos(c)">
-                {{ c.alumnos?.length || 0 }}
+                {{ c.alumnosCount || 0 }}
               </span>
             </td>
             <td style="white-space:nowrap">
