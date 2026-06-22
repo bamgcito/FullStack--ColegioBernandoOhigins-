@@ -8,7 +8,7 @@ import { environment } from '../../../environments/environment';
 @Injectable({ providedIn: 'root' })
 export class ComunicacionService implements OnDestroy {
   private readonly httpBase = environment.apiUrl;
-  private readonly socketUrl = 'http://localhost:3000';
+  private readonly socketUrl = environment.apiUrl.replace(/:\d+$/, ':3000');
 
   private socket: Socket | null = null;
   nuevoMensaje$ = new Subject<any>();
@@ -16,7 +16,7 @@ export class ComunicacionService implements OnDestroy {
 
   constructor(private http: HttpClient, private auth: AuthService) { }
 
-  // ── SOCKET.IO ─────────────────────────────────────────────────────────
+  // ── SOCKET.IO 
 
   conectar(usuarioId: number): void {
     if (this.socket?.connected) return;
