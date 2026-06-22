@@ -1,1 +1,9 @@
 // estilos en global.scss
+
+@media (max-width: 640px) {
+  .accordion-body .data-table { min-width: unset; }
+  .accordion-body .data-table th:nth-child(2),
+  .accordion-body .data-table td:nth-child(2) { width: 90px; }
+  .accordion-body .data-table th:nth-child(3),
+  .accordion-body .data-table td:nth-child(3) { width: 60px; text-align: center; }
+}
