@@ -1,0 +1,133 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-ms-notas:
+    name: Tests ms-notas
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+      - name: Ejecutar tests y generar reporte JaCoCo
+        run: mvn test jacoco:report --no-transfer-progress
+        working-directory: ms-notas
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jacoco-ms-notas
+          path: ms-notas/target/site/jacoco/
+
+  test-ms-asistencia:
+    name: Tests ms-asistencia
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+      - name: Ejecutar tests y generar reporte JaCoCo
+        run: mvn test jacoco:report --no-transfer-progress
+        working-directory: ms-asistencia
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jacoco-ms-asistencia
+          path: ms-asistencia/target/site/jacoco/
+
+  test-ms-perfiles:
+    name: Tests ms-perfiles
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+      - name: Ejecutar tests y generar reporte JaCoCo
+        run: mvn test jacoco:report --no-transfer-progress
+        working-directory: ms-perfiles
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jacoco-ms-perfiles
+          path: ms-perfiles/target/site/jacoco/
+
+  test-ms-evaluaciones:
+    name: Tests ms-evaluaciones
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+      - name: Ejecutar tests y generar reporte JaCoCo
+        run: mvn test jacoco:report --no-transfer-progress
+        working-directory: ms-evaluaciones
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jacoco-ms-evaluaciones
+          path: ms-evaluaciones/target/site/jacoco/
+
+  test-ms-cursos:
+    name: Tests ms-cursos
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+      - name: Ejecutar tests y generar reporte JaCoCo
+        run: mvn test jacoco:report --no-transfer-progress
+        working-directory: ms-cursos
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jacoco-ms-cursos
+          path: ms-cursos/target/site/jacoco/
+
+  sonarcloud:
+    name: Analisis SonarCloud
+    runs-on: ubuntu-latest
+    needs:
+      - test-ms-notas
+      - test-ms-asistencia
+      - test-ms-perfiles
+      - test-ms-evaluaciones
+      - test-ms-cursos
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+      - name: Regenerar reportes JaCoCo para Sonar
+        run: |
+          mvn test jacoco:report --no-transfer-progress -f ms-notas/pom.xml
+          mvn test jacoco:report --no-transfer-progress -f ms-asistencia/pom.xml
+          mvn test jacoco:report --no-transfer-progress -f ms-perfiles/pom.xml
+          mvn test jacoco:report --no-transfer-progress -f ms-evaluaciones/pom.xml
+          mvn test jacoco:report --no-transfer-progress -f ms-cursos/pom.xml
+      - uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
