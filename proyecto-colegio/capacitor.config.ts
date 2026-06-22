@@ -1,9 +1,13 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'io.ionic.starter',
-  appName: 'proyecto-colegio',
-  webDir: 'www'
+  appId: 'com.pablo.colegiobohigins',
+  appName: 'Colegio B. OHiggins',
+  webDir: 'www',
+  server: {
+    androidScheme: 'http',
+    cleartext: true
+  }
 };
 
 export default config;
