@@ -5,7 +5,8 @@ async function CrearConversacion(req, res, next) {
     try {
         const { iniciador_id, iniciador_tipo, receptor_id, receptor_tipo, alumno_id, curso_id } = req.body;
         const token = req.headers['authorization'];
-        const data = await conversacionesService.crearConversacion(iniciador_id, iniciador_tipo, receptor_id, receptor_tipo, alumno_id, curso_id, token);
+        const io = req.app.get('io');
+        const data = await conversacionesService.crearConversacion(iniciador_id, iniciador_tipo, receptor_id, receptor_tipo, alumno_id, curso_id, token, io);
         const respuesta = new RespuestaDTO().ok(data, 'Conversacion creada exitosamente');
         return res.status(200).json(respuesta);
     } catch (error) {

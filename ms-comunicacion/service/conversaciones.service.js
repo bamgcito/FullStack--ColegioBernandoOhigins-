@@ -184,7 +184,7 @@ async function verificarApoderadoDeAlumno(alumnoUsuarioId, receptorId, token) {
     }
 }
 
-async function crearConversacion(iniciador_id, iniciador_tipo, receptor_id, receptor_tipo, alumno_id, curso_id, token) {
+async function crearConversacion(iniciador_id, iniciador_tipo, receptor_id, receptor_tipo, alumno_id, curso_id, token, io) {
     let alumnoIdFinal = alumno_id;
 
     if (iniciador_tipo === 'APODERADO') {
@@ -221,7 +221,13 @@ async function crearConversacion(iniciador_id, iniciador_tipo, receptor_id, rece
         [result.insertId]
     );
 
-    return { conversacion: rows[0] ?? {} };
+    const conversacion = rows[0] ?? {};
+
+    if (io) {
+        io.to(`usuario_${receptor_id}`).emit('nueva_conversacion', conversacion);
+    }
+
+    return { conversacion };
 }
 
 async function obtenerPorUsuario(usuarioId, token) {

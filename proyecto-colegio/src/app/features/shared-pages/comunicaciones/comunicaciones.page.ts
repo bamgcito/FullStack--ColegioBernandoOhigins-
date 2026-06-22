@@ -75,10 +75,17 @@ export class ComunicacionesPage implements OnInit, OnDestroy {
         if (conv) {
           conv.sinLeer = (conv.sinLeer || 0) + 1;
           conv.ultimoMensaje = msg.contenido;
+        } else {
+          this.cargarConversaciones();
         }
       }
     });
     this.subs.push(subMsg);
+
+    const subConv = this.comunicacion.nuevaConversacion$.subscribe(() => {
+      this.cargarConversaciones();
+    });
+    this.subs.push(subConv);
 
     this.cargarConversaciones();
 
@@ -378,6 +385,5 @@ export class ComunicacionesPage implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subs.forEach(s => s.unsubscribe());
-    this.comunicacion.desconectar();
   }
 }

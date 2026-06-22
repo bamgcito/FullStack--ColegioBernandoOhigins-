@@ -13,6 +13,7 @@ export class ComunicacionService implements OnDestroy {
   private socket: Socket | null = null;
   nuevoMensaje$ = new Subject<any>();
   nuevaNotificacion$ = new Subject<any>();
+  nuevaConversacion$ = new Subject<any>();
 
   constructor(private http: HttpClient, private auth: AuthService) { }
 
@@ -32,6 +33,10 @@ export class ComunicacionService implements OnDestroy {
 
     this.socket.on('nueva_notificacion', (notif: any) => {
       this.nuevaNotificacion$.next(notif);
+    });
+
+    this.socket.on('nueva_conversacion', (conv: any) => {
+      this.nuevaConversacion$.next(conv);
     });
   }
 

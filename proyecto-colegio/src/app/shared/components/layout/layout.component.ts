@@ -11,8 +11,8 @@ import {
 } from 'ionicons/icons';
 import { AuthService, AuthUser } from '../../../core/services/auth.service';
 import { ComunicacionService } from '../../../core/services/comunicacion.service';
-import { Subscription } from 'rxjs';
-import { catchError, of } from 'rxjs';
+import { Subscription, Subject } from 'rxjs';
+import { catchError, of, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-layout',
@@ -29,6 +29,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
   notificaciones: any[] = [];
   mostrarNotif = false;
   private subs: Subscription[] = [];
+  private recargarNotif$ = new Subject<void>();
 
   constructor(
     private auth: AuthService,
@@ -70,12 +71,29 @@ get noLeidas(): number { return this.notificaciones.filter(n => !n.leido).length
     if (!this.currentUser) return;
 
     this.comunicacion.conectar(this.currentUser.id);
-    this.cargarNotificaciones();
+
+    const subRecargar = this.recargarNotif$.pipe(
+      switchMap(() =>
+        this.comunicacion.getNotificaciones(this.currentUser!.id).pipe(catchError(() => of(null)))
+      )
+    ).subscribe(resp => {
+      this.ngZone.run(() => {
+        const todas = resp?.respuesta?.lista_notificaciones ?? [];
+        const descartadas = this.getDescartadas();
+        this.notificaciones = todas.filter((n: any) => !descartadas.has(n.id));
+      });
+    });
+    this.subs.push(subRecargar);
+
+    this.recargarNotif$.next();
 
     const sub = this.comunicacion.nuevaNotificacion$.subscribe(n => {
-      if (!this.getDescartadas().has(n.id)) {
-        this.notificaciones = [n, ...this.notificaciones];
-      }
+      this.ngZone.run(() => {
+        if (this.router.url.includes('/comunicaciones')) {
+          this.comunicacion.marcarLeida(n.id).pipe(catchError(() => of(null))).subscribe();
+        }
+        this.recargarNotif$.next();
+      });
     });
     this.subs.push(sub);
   }
@@ -93,15 +111,6 @@ get noLeidas(): number { return this.notificaciones.filter(n => !n.leido).length
 
   private saveDescartadas(set: Set<number>) {
     localStorage.setItem(this.descartadasKey, JSON.stringify([...set]));
-  }
-
-  private cargarNotificaciones() {
-    if (!this.currentUser) return;
-    this.comunicacion.getNotificaciones(this.currentUser.id).pipe(catchError(() => of(null))).subscribe(resp => {
-      const todas = resp?.respuesta?.lista_notificaciones ?? [];
-      const descartadas = this.getDescartadas();
-      this.notificaciones = todas.filter((n: any) => !descartadas.has(n.id));
-    });
   }
 
   toggleNotif() { this.mostrarNotif = !this.mostrarNotif; }
