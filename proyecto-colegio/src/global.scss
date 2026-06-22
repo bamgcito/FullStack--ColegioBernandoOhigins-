@@ -19,6 +19,7 @@ router-outlet + * { display: block; height: 100%; }
   height: 100vh;
   overflow-y: auto;
   z-index: 100;
+  padding-top: env(safe-area-inset-top);
 }
 
 .sidebar-logo {
@@ -134,13 +135,13 @@ router-outlet + * { display: block; height: 100%; }
 .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
 
 .topbar {
-  height: var(--topbar-height);
+  height: calc(var(--topbar-height) + env(safe-area-inset-top));
   background: #ffffff;
   border-bottom: 1px solid #E2E8F0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  padding: env(safe-area-inset-top) 24px 0;
   flex-shrink: 0;
 }
 
@@ -364,7 +365,17 @@ router-outlet + * { display: block; height: 100%; }
   }
 
   /* Notificaciones */
-  .notif-dropdown { width: 290px; right: -40px; }
+  .notif-dropdown { width: 92vw; right: 0; }
+  .notif-dismiss {
+    font-size: 22px;
+    color: #4A5568;
+    min-width: 36px;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
 
   /* Welcome banner */
   .welcome-banner { padding: 14px 16px; gap: 12px; }
