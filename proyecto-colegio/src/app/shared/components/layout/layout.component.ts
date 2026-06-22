@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, NgZone } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { IonIcon } from '@ionic/angular/standalone';
@@ -6,9 +6,13 @@ import { addIcons } from 'ionicons';
 import {
   gridOutline, peopleOutline, schoolOutline, bookOutline, clipboardOutline,
   documentTextOutline, starOutline, checkmarkCircleOutline, pencilOutline,
-  chatbubblesOutline, personOutline, menuOutline, logOutOutline
+  chatbubblesOutline, personOutline, menuOutline, logOutOutline, notificationsOutline,
+  calendarOutline
 } from 'ionicons/icons';
 import { AuthService, AuthUser } from '../../../core/services/auth.service';
+import { ComunicacionService } from '../../../core/services/comunicacion.service';
+import { Subscription } from 'rxjs';
+import { catchError, of } from 'rxjs';
 
 @Component({
   selector: 'app-layout',
@@ -17,20 +21,26 @@ import { AuthService, AuthUser } from '../../../core/services/auth.service';
   templateUrl: './layout.component.html',
   styleUrls: ['./layout.component.scss']
 })
-export class LayoutComponent implements OnInit {
+export class LayoutComponent implements OnInit, OnDestroy {
   @Input() pageTitle = 'Dashboard';
   currentUser: AuthUser | null = null;
   sidebarOpen = false;
 
+  notificaciones: any[] = [];
+  mostrarNotif = false;
+  private subs: Subscription[] = [];
+
   constructor(
     private auth: AuthService,
     private router: Router,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private comunicacion: ComunicacionService
   ) {
     addIcons({
       gridOutline, peopleOutline, schoolOutline, bookOutline, clipboardOutline,
       documentTextOutline, starOutline, checkmarkCircleOutline, pencilOutline,
-      chatbubblesOutline, personOutline, menuOutline, logOutOutline
+      chatbubblesOutline, personOutline, menuOutline, logOutOutline, notificationsOutline,
+      calendarOutline
     });
   }
 
@@ -53,7 +63,67 @@ export class LayoutComponent implements OnInit {
     });
   }
 
-  ngOnInit() { this.currentUser = this.auth.currentUser; }
+get noLeidas(): number { return this.notificaciones.filter(n => !n.leido).length; }
+
+  ngOnInit() {
+    this.currentUser = this.auth.currentUser;
+    if (!this.currentUser) return;
+
+    this.comunicacion.conectar(this.currentUser.id);
+    this.cargarNotificaciones();
+
+    const sub = this.comunicacion.nuevaNotificacion$.subscribe(n => {
+      if (!this.getDescartadas().has(n.id)) {
+        this.notificaciones = [n, ...this.notificaciones];
+      }
+    });
+    this.subs.push(sub);
+  }
+
+  private get descartadasKey(): string {
+    return `notif_descartadas_${this.currentUser?.id ?? 0}`;
+  }
+
+  private getDescartadas(): Set<number> {
+    try {
+      const stored = localStorage.getItem(this.descartadasKey);
+      return new Set(stored ? JSON.parse(stored) : []);
+    } catch { return new Set(); }
+  }
+
+  private saveDescartadas(set: Set<number>) {
+    localStorage.setItem(this.descartadasKey, JSON.stringify([...set]));
+  }
+
+  private cargarNotificaciones() {
+    if (!this.currentUser) return;
+    this.comunicacion.getNotificaciones(this.currentUser.id).pipe(catchError(() => of(null))).subscribe(resp => {
+      const todas = resp?.respuesta?.lista_notificaciones ?? [];
+      const descartadas = this.getDescartadas();
+      this.notificaciones = todas.filter((n: any) => !descartadas.has(n.id));
+    });
+  }
+
+  toggleNotif() { this.mostrarNotif = !this.mostrarNotif; }
+  cerrarNotif() { this.mostrarNotif = false; }
+
+  descartarNotificacion(n: any, event: MouseEvent) {
+    event.stopPropagation();
+    this.notificaciones = this.notificaciones.filter(x => x !== n);
+    const descartadas = this.getDescartadas();
+    descartadas.add(n.id);
+    this.saveDescartadas(descartadas);
+  }
+
+  abrirNotificacion(n: any) {
+    this.mostrarNotif = false;
+    if (!n.leido) {
+      n.leido = true;
+      this.comunicacion.marcarLeida(n.id).pipe(catchError(() => of(null))).subscribe();
+    }
+    const rol = this.currentUser?.rol?.toLowerCase();
+    if (rol) this.router.navigate([`/${rol}/comunicaciones`]);
+  }
 
   isActive(ruta: string): boolean {
     return this.router.url === ruta || this.router.url.startsWith(ruta + '/');
@@ -66,4 +136,8 @@ export class LayoutComponent implements OnInit {
 
   logout() { this.ngZone.run(() => this.auth.logout()); }
   closeSidebar() { this.sidebarOpen = false; }
+
+  ngOnDestroy() {
+    this.subs.forEach(s => s.unsubscribe());
+  }
 }

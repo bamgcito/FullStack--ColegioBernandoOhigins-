@@ -1,47 +1,159 @@
 <app-layout pageTitle="Mensajería">
   <div class="chat-layout animate-in">
-    <div class="conv-list">
-      <div class="conv-list-header"><span class="content-card-title">Conversaciones</span></div>
-      <div *ngIf="conversaciones.length===0" style="padding:20px;text-align:center;color:#718096;font-size:13px">Sin conversaciones activas</div>
-      <div class="conv-item" *ngFor="let c of conversaciones" [class.active]="activa?.id===c.id" (click)="seleccionar(c)">
-        <div class="conv-avatar">{{ c.otro?.iniciales || '?' }}</div>
+
+    <!-- Lista de conversaciones -->
+    <div class="conv-list" [class.hide-mobile]="mostrarChat">
+      <div class="conv-list-header">
+        <span class="content-card-title">Conversaciones</span>
+        <button *ngIf="puedeIniciar()" class="btn-nueva" (click)="abrirNueva()">
+          <ion-icon name="add-outline"></ion-icon> Nueva
+        </button>
+      </div>
+
+      <div *ngIf="cargando" style="padding:20px;text-align:center;color:#718096;font-size:13px">Cargando...</div>
+      <div *ngIf="!cargando && errorMsg" style="padding:20px;text-align:center;color:#C53030;font-size:13px">{{ errorMsg }}</div>
+      <div *ngIf="!cargando && !errorMsg && conversaciones.length===0" style="padding:20px;text-align:center;color:#718096;font-size:13px">Sin conversaciones activas</div>
+
+      <div class="conv-item" *ngFor="let c of conversaciones"
+           [class.active]="activa?.id===c.id" (click)="seleccionar(c)">
+        <div class="conv-avatar">{{ inicialesOtro(c) }}</div>
         <div class="conv-info">
-          <div class="conv-nombre">{{ c.otro?.nombre }} {{ c.otro?.apellido }}</div>
+          <div class="conv-nombre">{{ nombreOtro(c) }}</div>
           <div class="conv-ultimo">{{ c.ultimoMensaje }}</div>
         </div>
         <div class="conv-meta">
-          <div class="conv-fecha">{{ fechaCorta(c.fechaUltimoMensaje) }}</div>
           <div class="conv-badge" *ngIf="c.sinLeer>0">{{ c.sinLeer }}</div>
         </div>
       </div>
     </div>
-    <div class="chat-panel" *ngIf="activa; else sinSel">
+
+    <!-- Panel de chat -->
+    <div class="chat-panel" [class.hide-mobile]="!mostrarChat" *ngIf="activa; else sinSel">
       <div class="chat-header">
-        <div class="chat-avatar">{{ activa.otro?.iniciales }}</div>
+        <button class="btn-volver-mobile" (click)="volverLista()">
+          <ion-icon name="arrow-back-outline"></ion-icon>
+        </button>
+        <div class="chat-avatar">{{ inicialesOtro(activa) }}</div>
         <div>
-          <div class="chat-nombre">{{ activa.otro?.nombre }} {{ activa.otro?.apellido }}</div>
-          <div style="font-size:12px;color:#718096">{{ activa.otro?.rol }}</div>
+          <div class="chat-nombre">{{ nombreOtro(activa) }}</div>
+          <div style="font-size:12px;color:#718096">{{ otroTipo(activa) }}</div>
         </div>
       </div>
       <div class="mensajes-lista">
         <div *ngFor="let m of mensajes" class="mensaje-row" [class.mio]="esMio(m)">
           <div class="chat-bubble" [class.sent]="esMio(m)" [class.received]="!esMio(m)">
             {{ m.contenido }}
-            <div class="msg-hora">{{ hora(m.fecha) }}</div>
+            <div class="msg-hora">{{ hora(m.fecha_envio || m.fecha) }}</div>
           </div>
         </div>
         <div *ngIf="mensajes.length===0" style="text-align:center;color:#718096;font-size:13px;margin:auto">Inicia la conversación</div>
       </div>
       <div class="chat-input-bar">
-        <input class="form-input chat-input" type="text" placeholder="Escribe un mensaje..." [(ngModel)]="nuevoMensaje" (keyup.enter)="enviar()" />
+        <input class="form-input chat-input" type="text" placeholder="Escribe un mensaje..."
+               [(ngModel)]="nuevoMensaje" (keyup.enter)="enviar()" />
         <button class="btn-send" (click)="enviar()"><ion-icon name="send-outline"></ion-icon></button>
       </div>
     </div>
+
     <ng-template #sinSel>
       <div class="chat-empty">
         <ion-icon name="chatbubbles-outline" style="font-size:48px;color:#CBD5E0"></ion-icon>
         <p style="color:#718096;font-weight:600">Selecciona una conversación</p>
       </div>
     </ng-template>
+  </div>
+
+  <!-- Modal: Nueva conversación -->
+  <div class="modal-backdrop" *ngIf="showNueva" (click)="cerrarNueva()"></div>
+  <div class="modal-panel" *ngIf="showNueva">
+    <div class="modal-header">
+      <span class="content-card-title">Nueva conversación</span>
+      <button class="btn-icon" (click)="cerrarNueva()"><ion-icon name="close-outline"></ion-icon></button>
+    </div>
+
+    <div class="modal-body">
+      <ng-container *ngIf="rol!=='PROFESOR'">
+        <ng-container *ngIf="rol==='APODERADO'">
+          <div class="form-group">
+            <label class="form-label">Alumno</label>
+            <select class="form-input" (change)="onAlumnoChange(alumnos[$any($event.target).selectedIndex - 1])">
+              <option value="">Selecciona un alumno</option>
+              <option *ngFor="let a of alumnos" [value]="a.id">{{ a.nombre }} {{ a.apellido }}</option>
+            </select>
+          </div>
+
+          <div class="form-group" *ngIf="alumnoSeleccionado">
+            <label class="form-label">Curso</label>
+            <select class="form-input" (change)="onCursoChange(cursosAlumno[$any($event.target).selectedIndex - 1])">
+              <option value="">Selecciona un curso</option>
+              <option *ngFor="let c of cursosAlumno" [value]="c.id">{{ c.nivel }}{{ c.letra }}</option>
+            </select>
+          </div>
+        </ng-container>
+
+        <div class="form-group" *ngIf="cursoSeleccionado">
+          <label class="form-label">Tipo de profesor</label>
+          <select class="form-input" [(ngModel)]="tipoReceptor" (change)="onTipoChange()">
+            <option value="PROFESOR_JEFE">Profesor Jefe</option>
+            <option value="PROFESOR_ASIGNATURA">Profesor de Asignatura</option>
+          </select>
+        </div>
+
+        <div class="form-group" *ngIf="cursoSeleccionado && profesoresDisponibles.length > 0">
+          <label class="form-label">Profesor</label>
+          <select class="form-input" (change)="profesorSeleccionado = profesoresDisponibles[$any($event.target).selectedIndex - 1]">
+            <option value="">Selecciona un profesor</option>
+            <option *ngFor="let p of profesoresDisponibles" [value]="p.id">{{ p.nombre }} {{ p.apellido }}</option>
+          </select>
+        </div>
+
+        <div *ngIf="cursoSeleccionado && profesoresDisponibles.length === 0" style="font-size:13px;color:#718096;padding:8px 0">
+          No hay profesores disponibles para el tipo seleccionado.
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="rol==='PROFESOR'">
+        <div class="form-group">
+          <label class="form-label">Curso / Asignación</label>
+          <select class="form-input" (change)="onCursoProfesorChange(cursosProfesor[$any($event.target).selectedIndex - 1])">
+            <option value="">Selecciona un curso</option>
+            <option *ngFor="let c of cursosProfesor" [value]="c.id">{{ c.nivel }}{{ c.letra }}</option>
+          </select>
+        </div>
+
+        <div class="form-group" *ngIf="cursoSeleccionado">
+          <label class="form-label">Alumno</label>
+          <select class="form-input" (change)="onAlumnoProfesorChange(alumnosDelCurso[$any($event.target).selectedIndex - 1])">
+            <option value="">Selecciona un alumno</option>
+            <option *ngFor="let a of alumnosDelCurso" [value]="a.alumnoId">{{ a.nombre }} {{ a.apellido }}</option>
+          </select>
+        </div>
+
+        <div class="form-group" *ngIf="alumnoElegido && apoderadosDelAlumno.length > 1">
+          <label class="form-label">Apoderado</label>
+          <select class="form-input" (change)="apoderadoElegido = apoderadosDelAlumno[$any($event.target).selectedIndex - 1]">
+            <option value="">Selecciona un apoderado</option>
+            <option *ngFor="let ap of apoderadosDelAlumno" [value]="ap.usuarioId">{{ ap.nombre }} {{ ap.apellido }}</option>
+          </select>
+        </div>
+
+        <div *ngIf="alumnoElegido && apoderadosDelAlumno.length === 1" style="font-size:13px;color:#718096;padding:8px 0">
+          Apoderado: {{ apoderadosDelAlumno[0].nombre }} {{ apoderadosDelAlumno[0].apellido }}
+        </div>
+
+        <div *ngIf="alumnoElegido && apoderadosDelAlumno.length === 0" style="font-size:13px;color:#718096;padding:8px 0">
+          Este alumno no tiene apoderado registrado.
+        </div>
+      </ng-container>
+
+      <div *ngIf="errorNueva" class="error-msg">{{ errorNueva }}</div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="cerrarNueva()">Cancelar</button>
+      <button class="btn-primary" (click)="crearConversacion()" [disabled]="creandoConv">
+        {{ creandoConv ? 'Creando...' : 'Iniciar conversación' }}
+      </button>
+    </div>
   </div>
 </app-layout>

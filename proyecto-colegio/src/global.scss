@@ -156,8 +156,65 @@ router-outlet + * { display: block; height: 100%; }
 }
 
 .topbar-title { font-family: 'Nunito', sans-serif; font-size: 17px; font-weight: 800; color: var(--ion-color-dark); }
+.topbar-right { display: flex; align-items: center; gap: 16px; }
 .topbar-date { font-size: 13px; color: var(--ion-color-medium); font-weight: 500; }
 .page-content { flex: 1; overflow-y: auto; padding: 24px; background: #ffffff; }
+
+.notif-wrapper { position: relative; }
+.notif-bell {
+  position: relative;
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  color: #4A5568;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 6px;
+}
+.notif-bell:hover { background: #F7F9FC; }
+.notif-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #C53030;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 10px;
+  min-width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+}
+.notif-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 320px;
+  max-height: 400px;
+  overflow-y: auto;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+  z-index: 200;
+}
+.notif-header { padding: 12px 16px; font-size: 13px; font-weight: 800; color: #1A202C; border-bottom: 1px solid #F0F4F8; }
+.notif-empty { padding: 24px 16px; text-align: center; font-size: 13px; color: #718096; }
+.notif-item { display: flex; align-items: flex-start; gap: 8px; padding: 12px 16px; border-bottom: 1px solid #F7F9FC; cursor: pointer; transition: background 0.15s; }
+.notif-item:hover { background: #F7F9FC; }
+.notif-item.unread { background: rgba(30,58,95,0.04); }
+.notif-item.unread .notif-msg { font-weight: 700; }
+.notif-content { flex: 1; min-width: 0; }
+.notif-msg { font-size: 13px; color: #1A202C; line-height: 1.4; }
+.notif-fecha { font-size: 11px; color: #A0AEC0; margin-top: 4px; }
+.notif-dismiss { flex-shrink: 0; background: none; border: none; cursor: pointer; color: #A0AEC0; font-size: 18px; line-height: 1; padding: 0 0 0 4px; transition: color 0.15s; }
+.notif-dismiss:hover { color: #E53E3E; }
+.notif-overlay { position: fixed; inset: 0; z-index: 150; }
 
 /* ── KPIs ── */
 .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
@@ -261,9 +318,56 @@ router-outlet + * { display: block; height: 100%; }
 
 /* ── Responsive ── */
 @media (max-width: 768px) {
-  .sidebar { display: none; position: fixed; top: 0; left: 0; z-index: 999; }
-  .sidebar.mobile-open { display: flex; }
+  .sidebar { display: none; position: fixed; top: 0; left: 0; height: 100vh; z-index: 999; }
+  .sidebar.mobile-open { display: flex; width: 260px; }
   .topbar-menu-btn { display: block; }
-  .kpi-grid { grid-template-columns: 1fr 1fr; }
-  .page-content { padding: 16px; }
+  .topbar-date { display: none; }
+  .topbar { padding: 0 12px; }
+  .topbar-title { font-size: 15px; }
+
+  .page-content { padding: 12px; }
+
+  /* KPIs: 2 columnas en móvil */
+  .kpi-grid { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .kpi-card { padding: 14px 12px; gap: 10px; }
+  .kpi-value { font-size: 22px; }
+  .kpi-label { font-size: 10px; }
+  .kpi-icon { width: 38px; height: 38px; font-size: 18px; }
+
+  /* Dashboard grid: apila columnas */
+  .dash-grid { display: flex !important; flex-direction: column !important; }
+
+  /* Cards */
+  .content-card-header { flex-wrap: wrap; gap: 8px; padding: 12px 14px; }
+  .content-card-title { font-size: 13px; }
+
+  /* Tablas con scroll horizontal */
+  .content-card { overflow-x: auto; }
+  .data-table { min-width: 480px; }
+  .data-table th, .data-table td { padding: 9px 10px; font-size: 12px; }
+
+  /* Formularios */
+  .page-actions { flex-direction: column; align-items: stretch; }
+  .page-actions .btn-primary { justify-content: center; }
+  .filters { flex-direction: column; }
+  .filters .form-select,
+  .filters .form-input { width: 100%; }
+
+  /* Modal pantalla completa */
+  .modal-overlay { padding: 0; align-items: flex-end; }
+  .modal-box {
+    max-width: 100%;
+    width: 100%;
+    border-radius: 16px 16px 0 0;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  /* Notificaciones */
+  .notif-dropdown { width: 290px; right: -40px; }
+
+  /* Welcome banner */
+  .welcome-banner { padding: 14px 16px; gap: 12px; }
+  .welcome-title { font-size: 16px; }
+  .welcome-avatar { width: 40px; height: 40px; font-size: 18px; }
 }

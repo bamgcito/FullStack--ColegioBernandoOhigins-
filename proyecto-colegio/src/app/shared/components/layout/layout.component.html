@@ -27,6 +27,9 @@
         <a class="nav-item" [class.active]="isActive('/admin/asignaciones')" (click)="navegarA('/admin/asignaciones')">
           <ion-icon name="clipboard-outline"></ion-icon> Asignaciones
         </a>
+        <a class="nav-item" [class.active]="isActive('/admin/horarios')" (click)="navegarA('/admin/horarios')">
+          <ion-icon name="calendar-outline"></ion-icon> Horarios
+        </a>
         <div class="sidebar-section-label">Académico</div>
         <a class="nav-item" [class.active]="isActive('/admin/evaluaciones')" (click)="navegarA('/admin/evaluaciones')">
           <ion-icon name="document-text-outline"></ion-icon> Evaluaciones
@@ -68,6 +71,9 @@
         <a class="nav-item" [class.active]="isActive('/profesor/anotaciones')" (click)="navegarA('/profesor/anotaciones')">
           <ion-icon name="pencil-outline"></ion-icon> Anotaciones
         </a>
+        <a class="nav-item" [class.active]="isActive('/profesor/horarios')" (click)="navegarA('/profesor/horarios')">
+          <ion-icon name="calendar-outline"></ion-icon> Mi Horario
+        </a>
         <div class="sidebar-section-label">Comunicación</div>
         <a class="nav-item" [class.active]="isActive('/profesor/comunicaciones')" (click)="navegarA('/profesor/comunicaciones')">
           <ion-icon name="chatbubbles-outline"></ion-icon> Mensajería
@@ -89,6 +95,9 @@
         <a class="nav-item" [class.active]="isActive('/alumno/anotaciones')" (click)="navegarA('/alumno/anotaciones')">
           <ion-icon name="pencil-outline"></ion-icon> Mis Anotaciones
         </a>
+        <a class="nav-item" [class.active]="isActive('/alumno/horarios')" (click)="navegarA('/alumno/horarios')">
+          <ion-icon name="calendar-outline"></ion-icon> Mi Horario
+        </a>
         <div class="sidebar-section-label">Comunicación</div>
         <a class="nav-item" [class.active]="isActive('/alumno/comunicaciones')" (click)="navegarA('/alumno/comunicaciones')">
           <ion-icon name="chatbubbles-outline"></ion-icon> Mensajería
@@ -109,6 +118,9 @@
         </a>
         <a class="nav-item" [class.active]="isActive('/apoderado/anotaciones')" (click)="navegarA('/apoderado/anotaciones')">
           <ion-icon name="pencil-outline"></ion-icon> Anotaciones
+        </a>
+        <a class="nav-item" [class.active]="isActive('/apoderado/horarios')" (click)="navegarA('/apoderado/horarios')">
+          <ion-icon name="calendar-outline"></ion-icon> Horario
         </a>
         <div class="sidebar-section-label">Comunicación</div>
         <a class="nav-item" [class.active]="isActive('/apoderado/comunicaciones')" (click)="navegarA('/apoderado/comunicaciones')">
@@ -138,8 +150,28 @@
         <ion-icon name="menu-outline"></ion-icon>
       </button>
       <span class="topbar-title">{{ pageTitle }}</span>
-      <span class="topbar-date">{{ today }}</span>
+      <div class="topbar-right">
+        <div class="notif-wrapper">
+          <button class="notif-bell" (click)="toggleNotif()">
+            <ion-icon name="notifications-outline"></ion-icon>
+            <span class="notif-badge" *ngIf="noLeidas > 0">{{ noLeidas }}</span>
+          </button>
+          <div class="notif-dropdown" *ngIf="mostrarNotif">
+            <div class="notif-header">Notificaciones</div>
+            <div class="notif-empty" *ngIf="notificaciones.length === 0">Sin notificaciones</div>
+            <div class="notif-item" *ngFor="let n of notificaciones" [class.unread]="!n.leido" (click)="abrirNotificacion(n)">
+              <div class="notif-content">
+                <div class="notif-msg">{{ n.mensaje }}</div>
+                <div class="notif-fecha">{{ n.fecha_creacion | date:'dd/MM HH:mm' }}</div>
+              </div>
+              <button class="notif-dismiss" (click)="descartarNotificacion(n, $event)" title="Descartar">×</button>
+            </div>
+          </div>
+        </div>
+        <span class="topbar-date">{{ today }}</span>
+      </div>
     </div>
+    <div class="notif-overlay" *ngIf="mostrarNotif" (click)="cerrarNotif()"></div>
     <div class="sidebar-overlay" *ngIf="sidebarOpen" (click)="closeSidebar()"></div>
     <div class="page-content">
       <ng-content></ng-content>
