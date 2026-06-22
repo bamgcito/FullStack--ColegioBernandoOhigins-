@@ -6,6 +6,7 @@ import { addIcons } from 'ionicons';
 import { starOutline } from 'ionicons/icons';
 import { AuthService } from '../../../core/services/auth.service';
 import { ApiService } from '../../../core/services/api.service';
+import { ApoderadoStateService } from '../../../core/services/apoderado-state.service';
 
 @Component({
   selector: 'app-apoderado-anotaciones',
@@ -19,20 +20,30 @@ export class ApoderadoAnotacionesPage implements OnInit {
   anotaciones: any[] = [];
   sinAlumno = false;
 
-  constructor(private auth: AuthService, private api: ApiService) { addIcons({ starOutline }); }
+  constructor(private auth: AuthService, private api: ApiService, private state: ApoderadoStateService) { addIcons({ starOutline }); }
 
   ngOnInit() {
     const apoderadoId = this.auth.currentUser?.id ?? 0;
     if (!apoderadoId) { this.sinAlumno = true; return; }
+
+    const cargarConPupilo = (pupilo: any) => {
+      this.pupiloNombre = `${pupilo.nombre} ${pupilo.apellido}`;
+      this.api.getAnotacionesAlumno(pupilo.usuarioId).subscribe({
+        next: data => { this.anotaciones = data; }
+      });
+    };
+
+    if (this.state.pupilo) {
+      cargarConPupilo(this.state.pupilo);
+      return;
+    }
+
     this.api.getAlumnosDeApoderado(apoderadoId).subscribe({
       next: alumnos => {
         if (!alumnos?.length) { this.sinAlumno = true; return; }
         const pupilo = alumnos[0];
-        this.pupiloNombre = `${pupilo.nombre} ${pupilo.apellido}`;
-        const rut = pupilo.rut;
-        this.api.getAnotacionesAlumno(rut).subscribe({
-          next: data => { this.anotaciones = data; }
-        });
+        this.state.pupilo = pupilo;
+        cargarConPupilo(pupilo);
       }
     });
   }

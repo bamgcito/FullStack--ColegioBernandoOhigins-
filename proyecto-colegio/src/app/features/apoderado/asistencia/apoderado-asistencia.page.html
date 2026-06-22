@@ -4,28 +4,45 @@
       No tienes alumnos asociados.
     </div>
     <ng-container *ngIf="!sinAlumno">
-      <div class="content-card" style="margin-bottom:16px">
-        <div class="content-card-header">
-          <span class="content-card-title">Porcentaje de Asistencia — {{ pupiloNombre }}</span>
-          <span class="badge" [ngClass]="porcentaje >= 75 ? 'badge-success' : 'badge-danger'">{{ porcentaje }}%</span>
-        </div>
+      <div class="kpi-grid" style="margin-bottom:20px">
+        <div class="kpi-card"><div class="kpi-icon blue"><ion-icon name="analytics-outline"></ion-icon></div><div><div class="kpi-value">{{ porcentaje }}%</div><div class="kpi-label">Asistencia General</div></div></div>
+        <div class="kpi-card"><div class="kpi-icon green"><ion-icon name="checkmark-outline"></ion-icon></div><div><div class="kpi-value">{{ presentes }}</div><div class="kpi-label">Presentes</div></div></div>
+        <div class="kpi-card"><div class="kpi-icon red"><ion-icon name="close-outline"></ion-icon></div><div><div class="kpi-value">{{ ausentes }}</div><div class="kpi-label">Ausencias</div></div></div>
+        <div class="kpi-card"><div class="kpi-icon orange"><ion-icon name="time-outline"></ion-icon></div><div><div class="kpi-value">{{ atrasados }}</div><div class="kpi-label">Atrasos</div></div></div>
       </div>
-      <div class="content-card">
-        <div class="content-card-header">
-          <span class="content-card-title">Registros de Asistencia</span>
-          <span class="badge badge-info">{{ registros.length }}</span>
+
+      <div *ngIf="asignaturas.length === 0" class="content-card" style="text-align:center;color:#718096;padding:40px">
+        Sin registros de asistencia para {{ pupiloNombre }}
+      </div>
+
+      <div class="accordion-item" *ngFor="let a of asignaturas">
+        <div class="accordion-header" [class.open]="isOpen(a.id)" (click)="toggle(a.id)">
+          <div style="display:flex;align-items:center;gap:10px">
+            <ion-icon name="book-outline" style="color:#1E3A5F;font-size:16px"></ion-icon>
+            <span>{{ a.nombre }}</span>
+            <span class="badge badge-info" style="margin-left:8px">
+              {{ a.registros.length ? (pct(a.registros) + '%') : 'Sin registros' }}
+            </span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:12px;color:#718096">{{ a.registros.length }} registros</span>
+            <ion-icon name="chevron-down-outline" class="accordion-arrow" [class.open]="isOpen(a.id)"></ion-icon>
+          </div>
         </div>
-        <div *ngIf="!registros.length" style="text-align:center;padding:32px;color:#718096">Sin registros de asistencia</div>
-        <table class="data-table" *ngIf="registros.length">
-          <thead><tr><th>Asignatura</th><th>Fecha</th><th>Estado</th></tr></thead>
-          <tbody>
-            <tr *ngFor="let r of registros">
-              <td>{{ r.nombreAsignatura || r.asignatura || 'Sin asignatura' }}</td>
-              <td style="font-size:12px;color:#718096">{{ r.fecha }}</td>
-              <td><span class="badge" [ngClass]="badge(r.estado)">{{ r.estado }}</span></td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="accordion-body" *ngIf="isOpen(a.id)">
+          <div *ngIf="a.registros.length === 0" style="text-align:center;color:#718096;padding:20px 0">
+            Sin registros de asistencia aún
+          </div>
+          <table class="data-table" *ngIf="a.registros.length > 0">
+            <thead><tr><th>Fecha</th><th>Estado</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let r of a.registros">
+                <td style="font-size:12px;color:#718096">{{ r.fecha }}</td>
+                <td><span class="badge" [ngClass]="badge(r.estado)">{{ r.estado }}</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </ng-container>
   </div>
