@@ -59,18 +59,18 @@ export class ProfesorAsistenciaPage implements OnInit {
     if (!asig?.cursoId) return;
     this.api.getAlumnosDeCurso(asig.cursoId).subscribe({
       next: alumnos => {
-        this.alumnos = alumnos;
-        this.alumnos.forEach(al => { this.registros[al.id] = 'PRESENTE'; });
+        this.alumnos = alumnos.filter((al: any) => al.nombre);
+        this.alumnos.forEach(al => { this.registros[al.alumnoId] = 'PRESENTE'; });
       }
     });
   }
 
   guardar() {
     const asig = this.asignaciones[this.asignacionIdx];
-    if (!asig) return;
+    if (!asig || !this.alumnos.length) return;
     this.errorMsg = '';
     forkJoin(this.alumnos.map(al => this.api.registrarAsistencia({
-      rutAlumno: al.rut, asignacionDocenteId: asig.id, fecha: this.fecha, estado: this.registros[al.id] || 'PRESENTE'
+      alumnoId: al.alumnoId, asignacionId: asig.id, fecha: this.fecha, estado: this.registros[al.alumnoId] || 'PRESENTE'
     }))).subscribe({
       next: () => {
         this.guardado = true;

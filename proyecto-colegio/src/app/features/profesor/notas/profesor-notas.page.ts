@@ -22,7 +22,7 @@ export class ProfesorNotasPage implements OnInit {
   asignacionId = 0;
   evaluacionId = 0;
   alumnos: any[] = [];
-  notasReg: Record<string, number> = {};
+  notasReg: Record<number, number> = {};
   guardado = false;
   errorMsg = '';
 
@@ -63,10 +63,10 @@ export class ProfesorNotasPage implements OnInit {
       alumnos: this.api.getAlumnosDeCurso(cursoId)
     }).subscribe({
       next: ({ notas, alumnos }) => {
-        this.alumnos = alumnos;
+        this.alumnos = alumnos.filter((al: any) => al.nombre);
         const map: Record<string, number> = {};
-        notas.forEach((n: any) => { if (n.rutAlumno) map[n.rutAlumno] = n.nota || 0; });
-        this.alumnos.forEach(al => { this.notasReg[al.rut] = map[al.rut] ?? 0; });
+        notas.forEach((n: any) => { if (n.alumnoId) map[n.alumnoId] = n.valor || 0; });
+        this.alumnos.forEach(al => { this.notasReg[al.alumnoId] = map[al.alumnoId] ?? 0; });
       }
     });
   }
@@ -74,8 +74,13 @@ export class ProfesorNotasPage implements OnInit {
   notaClass(n: number) { if (n >= 6) return 'excelente'; if (n >= 5) return 'buena'; if (n >= 4) return 'suficiente'; if (n > 0) return 'reprobado'; return ''; }
 
   guardar() {
-    const reqs = this.alumnos.filter(al => this.notasReg[al.rut] > 0)
-      .map(al => this.api.crearNota({ rutAlumno: al.rut, evaluacionId: this.evaluacionId, nota: this.notasReg[al.rut] }));
+    const invalidas = this.alumnos.filter(al => {
+      const v = Number(this.notasReg[al.alumnoId]);
+      return v > 0 && (v < 1 || v > 7);
+    });
+    if (invalidas.length) { this.errorMsg = 'Las notas deben estar entre 1.0 y 7.0'; return; }
+    const reqs = this.alumnos.filter(al => this.notasReg[al.alumnoId] > 0)
+      .map(al => this.api.crearNota({ alumnoId: al.alumnoId, evaluacionId: this.evaluacionId, valor: this.notasReg[al.alumnoId] }));
     if (!reqs.length) { this.guardado = true; return; }
     forkJoin(reqs).subscribe({
       next: () => {

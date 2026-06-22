@@ -9,6 +9,10 @@
         <div class="kpi-icon orange"><ion-icon name="pencil-outline"></ion-icon></div>
         <div><div class="kpi-value">{{ anotaciones.length }}</div><div class="kpi-label">Anotaciones</div></div>
       </div>
+      <div class="kpi-card" routerLink="/profesor/comunicaciones" style="cursor:pointer">
+        <div class="kpi-icon" style="background:rgba(107,70,193,0.1)"><ion-icon name="chatbubbles-outline" style="color:#6B46C1"></ion-icon></div>
+        <div><div class="kpi-value" style="font-size:14px;margin-top:4px">Mensajería</div><div class="kpi-label">Mensajes de apoderados</div></div>
+      </div>
     </div>
     <div class="dash-grid">
       <div class="content-card">
@@ -34,7 +38,7 @@
           <thead><tr><th>Alumno</th><th>Tipo</th><th>Descripción</th></tr></thead>
           <tbody>
             <tr *ngFor="let a of anotaciones">
-              <td>{{ a.rutAlumno }}</td>
+              <td>{{ a.alumnoNombre }}</td>
               <td><span class="badge" [ngClass]="badge(a.tipo)">{{ a.tipo }}</span></td>
               <td style="font-size:12px">{{ a.descripcion }}</td>
             </tr>

@@ -25,10 +25,11 @@ export class ProfesorAnotacionesPage implements OnInit {
   anotaciones: any[] = [];
   alumnos: any[] = [];
   alumnoNombres: Record<string, string> = {};
+  alumnoNombresPorId: Record<number, string> = {};
   showModal = false;
   errorMsg = '';
   exitoMsg = '';
-  nueva = { rutAlumno: '', descripcion: '', tipo: 'POSITIVA', fecha: new Date().toISOString().split('T')[0] };
+  nueva = { alumnoId: 0, descripcion: '', tipo: 'POSITIVA', fecha: new Date().toISOString().split('T')[0] };
 
   constructor(private auth: AuthService, private api: ApiService) { addIcons({ addOutline, closeOutline }); }
 
@@ -66,7 +67,10 @@ export class ProfesorAnotacionesPage implements OnInit {
             label: this.asignaturasList.find((s: any) => s.id === a.asignaturaId)?.nombre || `Asig. ${a.id}`
           }));
         this.alumnos = alumnos;
-        alumnos.forEach((al: any) => { this.alumnoNombres[al.rut] = `${al.nombre} ${al.apellido}`; });
+        alumnos.forEach((al: any) => {
+          this.alumnoNombres[al.rut] = `${al.nombre} ${al.apellido}`;
+          this.alumnoNombresPorId[al.alumnoId] = `${al.nombre} ${al.apellido}`;
+        });
       }
     });
   }
@@ -81,21 +85,22 @@ export class ProfesorAnotacionesPage implements OnInit {
   }
 
   getAlumno(rut: string) { return this.alumnoNombres[rut] || rut || '—'; }
+  getAlumnoById(id: number) { return this.alumnoNombresPorId[id] || String(id) || '—'; }
   badge(t: string) { return { POSITIVA: 'badge-success', NEGATIVA: 'badge-danger', NEUTRA: 'badge-neutral' }[t] || 'badge-neutral'; }
 
   abrirModal() {
     this.errorMsg = '';
-    this.nueva = { rutAlumno: '', descripcion: '', tipo: 'POSITIVA', fecha: new Date().toISOString().split('T')[0] };
+    this.nueva = { alumnoId: 0, descripcion: '', tipo: 'POSITIVA', fecha: new Date().toISOString().split('T')[0] };
     this.showModal = true;
   }
 
   crear() {
-    if (!this.nueva.rutAlumno || !this.nueva.descripcion || !this.asignacionId) return;
+    if (!this.nueva.alumnoId || !this.nueva.descripcion || !this.asignacionId) return;
     this.errorMsg = '';
-    this.api.registrarAnotacion({ ...this.nueva, asignacionDocenteId: +this.asignacionId }).subscribe({
+    this.api.registrarAnotacion({ alumnoId: this.nueva.alumnoId, descripcion: this.nueva.descripcion, tipo: this.nueva.tipo, asignacionId: +this.asignacionId }).subscribe({
       next: () => {
         this.showModal = false;
-        this.nueva = { rutAlumno: '', descripcion: '', tipo: 'POSITIVA', fecha: new Date().toISOString().split('T')[0] };
+        this.nueva = { alumnoId: 0, descripcion: '', tipo: 'POSITIVA', fecha: new Date().toISOString().split('T')[0] };
         this.exitoMsg = 'Anotación registrada correctamente';
         this.onAsignacion();
       },

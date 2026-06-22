@@ -23,7 +23,7 @@ export class ProfesorEvaluacionesPage implements OnInit {
   showModal = false;
   errorMsg = '';
   exitoMsg = '';
-  nueva = { nombre: '', fecha: new Date().toISOString().split('T')[0], descripcion: '' };
+  nueva = { titulo: '', fecha: new Date().toISOString().split('T')[0], descripcion: '' };
 
   constructor(private auth: AuthService, private api: ApiService) {
     addIcons({ addOutline, closeOutline });
@@ -58,19 +58,19 @@ export class ProfesorEvaluacionesPage implements OnInit {
 
   abrirModal() {
     this.errorMsg = '';
-    this.nueva = { nombre: '', fecha: new Date().toISOString().split('T')[0], descripcion: '' };
+    this.nueva = { titulo: '', fecha: new Date().toISOString().split('T')[0], descripcion: '' };
     this.showModal = true;
   }
 
   crear() {
-    if (!this.nueva.nombre || !this.asignacionId) return;
+    if (!this.nueva.titulo || !this.asignacionId) return;
     this.errorMsg = '';
-    this.api.crearEvaluacion({ ...this.nueva, asignacionDocenteId: +this.asignacionId }).subscribe({
+    this.api.crearEvaluacion({ titulo: this.nueva.titulo, descripcion: this.nueva.descripcion, asignacionId: +this.asignacionId }).subscribe({
       next: (resp: any) => {
         const msg: string = resp?.mensaje || '';
         if (msg.toLowerCase().includes('exitosamente')) {
           this.showModal = false;
-          this.nueva = { nombre: '', fecha: new Date().toISOString().split('T')[0], descripcion: '' };
+          this.nueva = { titulo: '', fecha: new Date().toISOString().split('T')[0], descripcion: '' };
           this.exitoMsg = 'Evaluación creada correctamente';
           this.onAsignacion();
         } else {

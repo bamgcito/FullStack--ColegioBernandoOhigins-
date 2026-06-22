@@ -8,15 +8,18 @@
     <div *ngFor="let c of cursos" class="content-card">
       <div class="content-card-header">
         <span class="content-card-title">{{ c.cursoNombre }}</span>
-        <span class="badge badge-info">{{ c.alumnos.length }} alumnos</span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span *ngIf="c.profesorJefeId === uid" class="badge badge-success">Profesor jefe</span>
+          <span class="badge badge-info">{{ c.alumnos.length }} alumnos</span>
+        </div>
       </div>
       <table class="data-table">
         <thead><tr><th>Nombre</th><th>RUT</th></tr></thead>
         <tbody>
           <tr *ngIf="!c.alumnos.length"><td colspan="2" style="text-align:center;padding:20px;color:#718096">Sin alumnos</td></tr>
           <tr *ngFor="let a of c.alumnos">
-            <td><strong>{{ a.nombre }} {{ a.apellido }}</strong></td>
-            <td style="font-family:monospace;font-size:12px">{{ a.rut }}</td>
+            <td><strong>{{ a.nombre ? (a.nombre + ' ' + a.apellido) : '(Sin perfil — ID: ' + a.alumnoId + ')' }}</strong></td>
+            <td style="font-family:monospace;font-size:12px">{{ a.rut || '—' }}</td>
           </tr>
         </tbody>
       </table>
