@@ -127,6 +127,7 @@ jobs:
           mvn test jacoco:report --no-transfer-progress -f ms-perfiles/pom.xml
           mvn test jacoco:report --no-transfer-progress -f ms-evaluaciones/pom.xml
           mvn test jacoco:report --no-transfer-progress -f ms-cursos/pom.xml
+          mvn test jacoco:report --no-transfer-progress -f ms-asignatura/pom.xml
       - uses: SonarSource/sonarcloud-github-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
